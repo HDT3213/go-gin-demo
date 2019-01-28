@@ -18,8 +18,8 @@ type User struct {
 
 func CreateUser(user *User) bool {
     user.ID = utils.Hash64(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int()))
-    if !db.NewRecord(user) {
-        db.Create(user)
+    if !db.NewRecord(*user) {
+        db.Debug().Create(user)
         return true
     }
     return false
@@ -27,12 +27,15 @@ func CreateUser(user *User) bool {
 
 func GetUser(uid uint64) *User {
     var user User
-    db.Where("id = ?", uid).First(&user)
+    db.First(&user, uid)
     return &user
 }
 
 func AllUsers() []User {
     var users []User
-    db.Find(&users)
+    err := db.Find(&users).Error
+    if err != nil {
+        panic(err)
+    }
     return users
 }

@@ -25,3 +25,11 @@ func AllUser(context *gin.Context) {
     users := model.AllUsers()
     Entity(context, users)
 }
+
+func Register(context *gin.Context) {
+    user := new(model.User)
+    user.Username = context.PostForm("username")
+    user.Password = context.PostForm("password")
+    model.CreateUser(user)
+    Entity(context, user)
+}

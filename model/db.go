@@ -18,6 +18,7 @@ func Setup() {
             panic(err)
         }
     }
+    db.LogMode(true)
 }
 
 func Close() {

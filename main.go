@@ -26,6 +26,7 @@ func main() {
     app.GET("/", controller.Index)
     app.GET("/user/:id", controller.GetUser)
     app.GET("/users", controller.AllUser)
+    app.POST("/register", controller.Register)
 
     // run
     endless.ListenAndServe(":" + port, app)

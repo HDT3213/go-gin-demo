@@ -2,7 +2,7 @@ package model
 
 import (
     "time"
-    "../utils"
+    "go-close/utils"
     "strconv"
     "math/rand"
 )
@@ -19,7 +19,9 @@ type User struct {
 func CreateUser(user *User) bool {
     user.ID = utils.Hash64(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int()))
     if !db.NewRecord(*user) {
-        db.Debug().Create(user)
+        if err := db.Create(user).Error; err != nil {
+            panic(err)
+        }
         return true
     }
     return false
@@ -29,6 +31,12 @@ func GetUser(uid uint64) *User {
     var user User
     db.First(&user, uid)
     return &user
+}
+
+func GetUserByName(username string) (*User, error) {
+    var user User
+    err := db.Where("username = ?", username).First(&user).Error
+    return &user, err
 }
 
 func AllUsers() []User {

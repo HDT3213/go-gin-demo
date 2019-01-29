@@ -3,13 +3,10 @@ package main
 import (
     "os"
     "github.com/gin-gonic/gin"
-    "github.com/jinzhu/gorm"
     "github.com/fvbock/endless"
-    "./controller"
-    "./model"
+    "go-close/model"
+    "go-close/router"
 )
-
-var DB *gorm.DB
 
 func main() {
     port := os.Getenv("PORT")
@@ -21,12 +18,7 @@ func main() {
     defer model.Close()
 
     app := gin.Default()
-
-    // router
-    app.GET("/", controller.Index)
-    app.GET("/user/:id", controller.GetUser)
-    app.GET("/users", controller.AllUser)
-    app.POST("/register", controller.Register)
+    router.Setup(app)
 
     // run
     endless.ListenAndServe(":" + port, app)

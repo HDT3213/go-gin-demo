@@ -7,6 +7,7 @@ import (
     "fmt"
     "go-close/middleware"
     "go-close/utils/response"
+    "go-close/entity"
 )
 
 func GetUser(ctx *gin.Context)  {
@@ -23,13 +24,8 @@ func GetUser(ctx *gin.Context)  {
     response.Entity(ctx, user)
 }
 
-func AllUser(ctx *gin.Context) {
-    users := model.AllUsers()
-    response.Entity(ctx, users)
-}
-
 func Register(ctx *gin.Context) {
-    user := new(model.User)
+    user := new(entity.User)
     user.Username = ctx.PostForm("username")
     user.Password = ctx.PostForm("password")
     model.CreateUser(user)

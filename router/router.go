@@ -16,7 +16,7 @@ func Setup(app *gin.Engine) {
     loginRequired := app.Group("")
     loginRequired.Use(middleware.JWT())
     {
-        loginRequired.GET("/users", controller.AllUser)
+        //loginRequired.GET("/users", controller.AllUser)
         loginRequired.GET("/self", controller.Self)
     }
 }

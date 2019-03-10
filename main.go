@@ -17,6 +17,8 @@ func main() {
     model.Setup()
     defer model.Close()
 
+    model.Test()
+
     app := gin.Default()
     router.Setup(app)
 

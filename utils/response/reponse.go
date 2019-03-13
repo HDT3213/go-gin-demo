@@ -35,3 +35,10 @@ func Forbidden(ctx *gin.Context, msg string) {
         "msg": msg,
     })
 }
+
+func InternalServerError(ctx *gin.Context, msg string) {
+    ctx.JSON(500, gin.H{
+        "success": false,
+        "msg": msg,
+    })
+}

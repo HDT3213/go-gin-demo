@@ -8,26 +8,32 @@ import (
     "encoding/json"
 )
 
-func CreateUser(user *entity.User) bool {
+func CreateUser(user *entity.User) error {
     user.ID = utils.Hash64(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int()))
     if !db.NewRecord(*user) {
         if err := db.Create(user).Error; err != nil {
-            panic(err)
+            return err
         }
-        return true
+        return nil
     }
-    return false
+    return nil
 }
 
-func GetUser(uid uint64) *entity.User {
+func GetUser(uid uint64) (*entity.User, error) {
     var user entity.User
-    db.First(&user, uid)
-    return &user
+    err := db.First(&user, uid).Error
+    if err != nil && err.Error() == "record not found" {
+        return nil, nil
+    }
+    return &user, err
 }
 
 func GetUserByName(username string) (*entity.User, error) {
     var user entity.User
     err := db.Where("username = ?", username).First(&user).Error
+    if err != nil && err.Error() == "record not found" {
+        return nil, nil
+    }
     return &user, err
 }
 

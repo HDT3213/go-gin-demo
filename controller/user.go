@@ -7,7 +7,7 @@ import (
     "fmt"
     "go-close/middleware"
     "go-close/utils/response"
-    "go-close/entity"
+    UserService "go-close/service/user"
 )
 
 func GetUser(ctx *gin.Context)  {
@@ -16,36 +16,34 @@ func GetUser(ctx *gin.Context)  {
         response.BadRequest(ctx, "invalid uid: " + ctx.Param("id"))
         return
     }
-    user := model.GetUser(uid)
-    if user == nil {
-        response.NotFound(ctx, fmt.Sprintf("user not found: %d", uid))
-        return
+    user, err := UserService.GetUser(uid)
+    if err != nil {
+        panic(err)
     }
     response.Entity(ctx, user)
 }
 
 func Register(ctx *gin.Context) {
-    user := new(entity.User)
-    user.Username = ctx.PostForm("username")
-    user.Password = ctx.PostForm("password")
-    model.CreateUser(user)
-    response.Entity(ctx, user)
+    username := ctx.PostForm("username")
+    password := ctx.PostForm("password")
+    entity, err := UserService.Register(username, password)
+    if err != nil {
+        response.Error(ctx, err)
+        return
+    }
+    response.Entity(ctx, entity)
 }
 
 func Login(ctx *gin.Context) {
     username := ctx.PostForm("username")
     password := ctx.PostForm("password")
-    user, err := model.GetUserByName(username)
+    _, uid, err := UserService.Login(username, password)
     if err != nil {
-        panic(err)
+        response.Error(ctx, err)
+        return
     }
-    if user != nil && user.Password == password {
-        middleware.SetCookie(ctx, user.ID)
-        response.Success(ctx)
-    } else {
-        response.BadRequest(ctx, "invalid username or password")
-    }
-
+    middleware.SetCookie(ctx, uid)
+    response.Success(ctx)
 }
 
 func Self(ctx *gin.Context) {
@@ -59,7 +57,10 @@ func Self(ctx *gin.Context) {
         response.Forbidden(ctx, "please login")
         return
     }
-    user := model.GetUser(uid)
+    user, err := model.GetUser(uid)
+    if err != nil {
+        panic(err)
+    }
     if user == nil {
         response.NotFound(ctx, fmt.Sprintf("user not found: %d", uid))
         return

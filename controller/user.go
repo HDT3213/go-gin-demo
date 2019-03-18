@@ -11,7 +11,7 @@ import (
 )
 
 func GetUser(ctx *gin.Context)  {
-    uid, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+    uid, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
     if err != nil {
         response.BadRequest(ctx, "invalid uid: " + ctx.Param("id"))
         return

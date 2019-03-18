@@ -3,8 +3,8 @@ package model
 import (
     "github.com/go-redis/redis"
     "fmt"
-    "encoding/json"
     "time"
+    "github.com/vmihailenco/msgpack"
 )
 
 var Redis *redis.Client
@@ -31,9 +31,11 @@ func closeCache() {
 
 
 func Marshal(v interface{}) ([]byte, error) {
-    return json.Marshal(v)
+    return msgpack.Marshal(v)
+    //return json.Marshal(v)
 }
 
 func Unmarshal(data []byte, v interface{}) error {
-    return json.Unmarshal(data, v)
+    return msgpack.Unmarshal(data, v)
+    //return json.Unmarshal(data, v)
 }

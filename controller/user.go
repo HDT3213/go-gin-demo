@@ -18,7 +18,8 @@ func GetUser(ctx *gin.Context)  {
     }
     user, err := UserService.GetUser(uid)
     if err != nil {
-        panic(err)
+        response.Error(ctx, err)
+        return
     }
     response.Entity(ctx, user)
 }

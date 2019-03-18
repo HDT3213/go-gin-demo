@@ -55,9 +55,27 @@ func getUserFromCache(uid uint64) (*entity.User, error) {
 
 func getUserFromDB(uid uint64) (*entity.User, error) {
     user := new(entity.User)
-    err := db.First(&user, uid).Error
+    err := db.Where("valid = 1").First(&user, uid).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
+    }
+    return user, err
+}
+
+func GetUser(uid uint64) (*entity.User, error) {
+    user, err := getUserFromCache(uid)
+    if err != nil {
+        return nil, err
+    }
+    if user != nil {
+        return user, nil
+    }
+    user, err = getUserFromDB(uid)
+    if err != nil {
+        return nil, err
+    }
+    if user != nil {
+        setUserCache(user)
     }
     return user, err
 }
@@ -120,25 +138,9 @@ func GetUserMap(uids []uint64) (map[uint64]*entity.User, error) {
     return userMap, nil
 }
 
-func GetUser(uid uint64) (*entity.User, error) {
-    user, err := getUserFromCache(uid)
-    if err != nil {
-        return nil, err
-    }
-    if user != nil {
-        return user, nil
-    }
-    user, err = getUserFromDB(uid)
-    if err != nil {
-        return nil, err
-    }
-    setUserCache(user)
-    return user, err
-}
-
 func GetUserByName(username string) (*entity.User, error) {
     var user entity.User
-    err := db.Where("username = ?", username).First(&user).Error
+    err := db.Where("username = ? AND valid = 1", username).First(&user).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
     }

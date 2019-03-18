@@ -25,7 +25,7 @@ func RenderUser(user *entity.User) *entity.UserEntity {
 }
 
 func Register(username string, password string) (*entity.UserEntity, error) {
-    user := &entity.User{Username:username, Password:password}
+    user := &entity.User{Username:username, Password:password, Valid:true}
     err := model.CreateUser(user)
     if err != nil {
         panic(err)

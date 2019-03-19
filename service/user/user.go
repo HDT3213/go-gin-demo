@@ -1,10 +1,10 @@
 package user
 
 import (
-    "go-close/entity"
+    "github.com/go-gin-demo/entity"
     "strconv"
-    "go-close/model"
-    BizError "go-close/errors"
+    "github.com/go-gin-demo/model"
+    BizError "github.com/go-gin-demo/errors"
     "fmt"
 )
 

@@ -1,12 +1,12 @@
 package model
 
 import (
-    "go-close/utils"
-    "go-close/entity"
+    "github.com/go-gin-demo/utils"
+    "github.com/go-gin-demo/entity"
     "strconv"
     "math/rand"
     "fmt"
-    BizError "go-close/errors"
+    BizError "github.com/go-gin-demo/errors"
 )
 
 func genUserCacheKey(uid uint64) string {

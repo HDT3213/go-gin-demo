@@ -2,8 +2,8 @@ package middleware
 
 import (
     "github.com/gin-gonic/gin"
-    "go-close/utils"
-    "go-close/utils/response"
+    "github.com/go-gin-demo/utils"
+    "github.com/go-gin-demo/utils/response"
     "github.com/dgrijalva/jwt-go"
     "time"
 )

@@ -4,8 +4,8 @@ import (
     "os"
     "github.com/gin-gonic/gin"
     "github.com/fvbock/endless"
-    "go-close/model"
-    "go-close/router"
+    "github.com/go-gin-demo/model"
+    "github.com/go-gin-demo/router"
 )
 
 func main() {

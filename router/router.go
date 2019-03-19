@@ -2,8 +2,8 @@ package router
 
 import (
     "github.com/gin-gonic/gin"
-    "go-close/middleware"
-    "go-close/controller"
+    "github.com/go-gin-demo/middleware"
+    "github.com/go-gin-demo/controller"
 )
 
 func Setup(app *gin.Engine) {

@@ -2,12 +2,12 @@ package controller
 
 import (
     "github.com/gin-gonic/gin"
-    "go-close/model"
+    "github.com/go-gin-demo/model"
     "strconv"
     "fmt"
-    "go-close/middleware"
-    "go-close/utils/response"
-    UserService "go-close/service/user"
+    "github.com/go-gin-demo/middleware"
+    "github.com/go-gin-demo/utils/response"
+    UserService "github.com/go-gin-demo/service/user"
 )
 
 func GetUser(ctx *gin.Context)  {

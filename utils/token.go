@@ -8,7 +8,7 @@ import (
 
 
 type Claims struct {
-    uid uint64
+    Uid uint64
     jwt.StandardClaims
 }
 
@@ -38,7 +38,7 @@ func ParseAuthToken(token string, secret string) (uint64, error) {
 
     if claims != nil {
         if c, ok := claims.Claims.(*Claims); ok && claims.Valid {
-            return c.uid, nil
+            return c.Uid, nil
         }
     }
     return 0, errors.New("invalid token")

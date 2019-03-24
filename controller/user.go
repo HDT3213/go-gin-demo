@@ -2,9 +2,7 @@ package controller
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/model"
     "strconv"
-    "fmt"
     "github.com/go-gin-demo/middleware"
     "github.com/go-gin-demo/utils/response"
     UserService "github.com/go-gin-demo/service/user"
@@ -43,27 +41,19 @@ func Login(ctx *gin.Context) {
         response.Error(ctx, err)
         return
     }
-    middleware.SetCookie(ctx, uid)
+    middleware.SetCurrentUid(ctx, uid)
     response.Success(ctx)
 }
 
 func Self(ctx *gin.Context) {
-    rawUid, ok := ctx.Keys["uid"]
-    if !ok {
-        response.Forbidden(ctx, "please login")
-        return
-    }
-    uid, ok := rawUid.(uint64)
-    if !ok {
-        response.Forbidden(ctx, "please login")
-        return
-    }
-    user, err := model.GetUser(uid)
+    uid, err := middleware.GetCurrentUid(ctx)
     if err != nil {
-        panic(err)
+        response.Error(ctx, err)
+        return
     }
-    if user == nil {
-        response.NotFound(ctx, fmt.Sprintf("user not found: %d", uid))
+    user, err := UserService.GetUser(uid)
+    if err != nil {
+        response.Error(ctx, err)
         return
     }
     response.Entity(ctx, user)

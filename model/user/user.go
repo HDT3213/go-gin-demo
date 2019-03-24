@@ -1,96 +1,100 @@
-package model
+package user
 
 import (
     "github.com/go-gin-demo/utils"
     "github.com/go-gin-demo/entity"
+    "github.com/go-gin-demo/model"
     "strconv"
     "math/rand"
     "fmt"
     BizError "github.com/go-gin-demo/errors"
 )
 
-func genUserCacheKey(uid uint64) string {
+func genCacheKey(uid uint64) string {
     return fmt.Sprintf("U:%d", uid)
 }
 
-func setUserCache(user *entity.User) error {
-    key := genUserCacheKey(user.ID)
-    val, err := Marshal(user)
+func setCache(user *entity.User) error {
+    key := genCacheKey(user.ID)
+    val, err := model.Marshal(user)
     if err != nil {
         return err
     }
-    _, err = Redis.Set(key, val, 0).Result()
+    _, err = model.Redis.Set(key, val, 0).Result()
     return err
 }
 
-func CreateUser(user *entity.User) error {
+func Create(user *entity.User) error {
     user.ID = utils.Hash64(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int()))
-    if db.NewRecord(*user) {
+    if model.DB.NewRecord(*user) {
         return BizError.InvalidForm("user exists")
     }
-    if err := db.Create(user).Error; err != nil {
+    if err := model.DB.Create(user).Error; err != nil {
         return err
     }
-    setUserCache(user)
+    setCache(user)
     return nil
 }
 
-func getUserFromCache(uid uint64) (*entity.User, error) {
-    key := genUserCacheKey(uid)
-    val, err := Redis.Get(key).Result()
+func getFromCache(uid uint64) (*entity.User, error) {
+    key := genCacheKey(uid)
+    val, err := model.Redis.Get(key).Result()
     if err != nil {
         if err.Error() == "redis: nil" {
             return nil, nil
         } else {
-            panic(err)
+            return nil, err
         }
     }
     user := new(entity.User)
-    err = Unmarshal([]byte(val), user)
+    err = model.Unmarshal([]byte(val), user)
     if err != nil {
-        panic(err)
+        return nil, err
     }
     return user, nil
 }
 
-func getUserFromDB(uid uint64) (*entity.User, error) {
+func getFromDB(uid uint64) (*entity.User, error) {
     user := new(entity.User)
-    err := db.Where("valid = 1").First(&user, uid).Error
+    err := model.DB.Where("valid = 1").First(&user, uid).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
     }
     return user, err
 }
 
-func GetUser(uid uint64) (*entity.User, error) {
-    user, err := getUserFromCache(uid)
+func Get(uid uint64) (*entity.User, error) {
+    user, err := getFromCache(uid)
     if err != nil {
         return nil, err
     }
     if user != nil {
         return user, nil
     }
-    user, err = getUserFromDB(uid)
+    user, err = getFromDB(uid)
     if err != nil {
         return nil, err
     }
     if user != nil {
-        setUserCache(user)
+        setCache(user)
     }
     return user, err
 }
 
-func MultiGetUser(uids []uint64) ([]*entity.User, error) {
+/**
+    return slice may contains nil
+ */
+func MultiGet(uids []uint64) ([]*entity.User, error) {
     if len(uids) == 0 {
         return make([]*entity.User, 0), nil
     }
 
     keys := make([]string, len(uids))
     for i, uid := range uids {
-        keys[i] = genUserCacheKey(uid)
+        keys[i] = genCacheKey(uid)
     }
 
-    vals, err := Redis.MGet(keys...).Result()
+    vals, err := model.Redis.MGet(keys...).Result()
     if err != nil {
         return nil, err
     }
@@ -102,7 +106,7 @@ func MultiGetUser(uids []uint64) ([]*entity.User, error) {
         if !ok {
             continue
         }
-        err = Unmarshal([]byte(str), user)
+        err = model.Unmarshal([]byte(str), user)
         if err != nil {
             continue
         }
@@ -111,21 +115,21 @@ func MultiGetUser(uids []uint64) ([]*entity.User, error) {
 
     for i, uid := range uids {
         if users[i] == nil {
-            user, err := getUserFromDB(uid)
+            user, err := getFromDB(uid)
             if err != nil {
                 continue
             }
             if user != nil {
                 users[i] = user
-                setUserCache(user)
+                setCache(user)
             }
         }
     }
     return users, nil
 }
 
-func GetUserMap(uids []uint64) (map[uint64]*entity.User, error) {
-    users, err := MultiGetUser(uids)
+func GetMap(uids []uint64) (map[uint64]*entity.User, error) {
+    users, err := MultiGet(uids)
     if err != nil {
         return nil, err
     }
@@ -138,9 +142,9 @@ func GetUserMap(uids []uint64) (map[uint64]*entity.User, error) {
     return userMap, nil
 }
 
-func GetUserByName(username string) (*entity.User, error) {
+func GetByName(username string) (*entity.User, error) {
     var user entity.User
-    err := db.Where("username = ? AND valid = 1", username).First(&user).Error
+    err := model.DB.Where("username = ? AND valid = 1", username).First(&user).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
     }

@@ -6,6 +6,7 @@ import (
     "github.com/go-gin-demo/utils/response"
     "github.com/dgrijalva/jwt-go"
     "time"
+    BizError "github.com/go-gin-demo/errors"
 )
 
 const (
@@ -45,10 +46,22 @@ func JWT() gin.HandlerFunc {
     }
 }
 
-func SetCookie(ctx *gin.Context, uid uint64) {
+func SetCurrentUid(ctx *gin.Context, uid uint64) {
     token, err := utils.GenAuthToken(uid, expireTime * time.Hour, jwtSecret)
     if err != nil {
         panic(err)
     }
     ctx.SetCookie(authCookie, token, expireTime * 60 * 60, "/", "", false, false)
+}
+
+func GetCurrentUid(ctx *gin.Context) (uint64, error) {
+    rawUid, ok := ctx.Keys["uid"]
+    if !ok {
+        return 0, BizError.Forbidden("login required")
+    }
+    uid, ok := rawUid.(uint64)
+    if !ok {
+        return 0, BizError.Forbidden("login required")
+    }
+    return uid, nil
 }

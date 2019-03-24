@@ -8,6 +8,7 @@ type BizError struct {
 const (
     NotFoundErrorCode    = 404
     InvalidFormErrorCode = 400
+    ForbiddenErrorCode   = 403
 )
 
 func (f *BizError) Error() string {
@@ -47,4 +48,19 @@ func IsInvalidForm(err error) bool {
         return false
     }
     return bizError.Code == InvalidFormErrorCode
+}
+
+func Forbidden(msg string) error {
+    return &BizError{
+        Code: ForbiddenErrorCode,
+        msg:  msg,
+    }
+}
+
+func IsForbidden(err error) bool {
+    bizError, ok := err.(*BizError)
+    if !ok {
+        return false
+    }
+    return bizError.Code == ForbiddenErrorCode
 }

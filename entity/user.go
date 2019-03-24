@@ -14,6 +14,7 @@ type User struct {
 }
 
 type UserEntity struct {
-    Id string `json:"id"`
+    ID       uint64 `json:"-"`
+    IDStr    string `json:"id"`
     Username string `json:"username"`
 }

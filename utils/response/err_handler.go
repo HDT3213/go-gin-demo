@@ -10,5 +10,9 @@ func Error(ctx *gin.Context, err error) {
         BadRequest(ctx, err.Error())
     } else if BizError.IsNotFound(err) {
         NotFound(ctx, err.Error())
+    } else if BizError.IsForbidden(err) {
+        Forbidden(ctx, err.Error())
+    } else {
+        InternalServerError(ctx, err.Error())
     }
 }

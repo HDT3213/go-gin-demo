@@ -3,7 +3,7 @@ package user
 import (
     "github.com/go-gin-demo/entity"
     "strconv"
-    "github.com/go-gin-demo/model"
+    UserModel "github.com/go-gin-demo/model/user"
     BizError "github.com/go-gin-demo/errors"
     "fmt"
 )
@@ -11,30 +11,39 @@ import (
 func RenderUsers(users []*entity.User) (entities []*entity.UserEntity) {
     entities = make([]*entity.UserEntity, len(users))
     for i, user := range users {
-        entity := &entity.UserEntity{Id:strconv.FormatUint(user.ID, 10), Username:user.Username}
-        entities[i] = entity
+        if user == nil {
+            continue
+        }
+        entities[i] = &entity.UserEntity{ID:user.ID, IDStr:strconv.FormatUint(user.ID, 10), Username:user.Username}
     }
     return
 }
 
+func RenderUsersById(uids []uint64) ([]*entity.UserEntity, error) {
+    users, err := UserModel.MultiGet(uids)
+    if err != nil {
+        return nil, err
+    }
+    return RenderUsers(users), nil
+}
+
 func RenderUser(user *entity.User) *entity.UserEntity {
-    users := make([]*entity.User, 1)
-    users[0] = user
+    users := []*entity.User{user}
     entities := RenderUsers(users)
     return entities[0]
 }
 
 func Register(username string, password string) (*entity.UserEntity, error) {
     user := &entity.User{Username:username, Password:password, Valid:true}
-    err := model.CreateUser(user)
+    err := UserModel.Create(user)
     if err != nil {
-        panic(err)
+        return nil, err
     }
     return RenderUser(user), nil
 }
 
 func Login(username string, password string) (*entity.UserEntity, uint64, error) {
-    user, err := model.GetUserByName(username)
+    user, err := UserModel.GetByName(username)
     if err != nil {
         panic(err)
     }
@@ -48,7 +57,7 @@ func Login(username string, password string) (*entity.UserEntity, uint64, error)
 }
 
 func GetUser(uid uint64) (*entity.UserEntity, error) {
-    user, err := model.GetUser(uid)
+    user, err := UserModel.Get(uid)
     if err != nil {
         panic(err)
     }

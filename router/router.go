@@ -12,11 +12,14 @@ func Setup(app *gin.Engine) {
     app.POST("/register", controller.Register)
     app.POST("/login", controller.Login)
     app.GET("/user/:id", controller.GetUser)
+    app.GET("/post/:id", controller.GetPost)
 
     loginRequired := app.Group("")
     loginRequired.Use(middleware.JWT())
     {
         //loginRequired.GET("/users", controller.AllUser)
         loginRequired.GET("/self", controller.Self)
+        loginRequired.POST("/post", controller.CreatePost)
+        loginRequired.DELETE("/post/:id", controller.DeletePost)
     }
 }

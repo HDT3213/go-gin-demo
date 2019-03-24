@@ -6,26 +6,26 @@ import (
     "github.com/go-gin-demo/entity"
 )
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func setupDB() {
     var err error
-    db, err = gorm.Open("mysql", "go:password@tcp(127.0.0.1:3306)/go?charset=utf8&parseTime=True&loc=Asia%2fShanghai")
+    DB, err = gorm.Open("mysql", "go:password@tcp(127.0.0.1:3306)/go?charset=utf8&parseTime=True&loc=Asia%2fShanghai")
     if nil != err {
         panic(err)
     }
-    if !db.HasTable(&entity.User{}) {
-        if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.User{}).Error; err != nil {
+    if !DB.HasTable(&entity.User{}) {
+        if err := DB.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.User{}).Error; err != nil {
             panic(err)
         }
     }
-    if !db.HasTable(&entity.Post{}) {
-        if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.Post{}).Error; err != nil {
+    if !DB.HasTable(&entity.Post{}) {
+        if err := DB.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.Post{}).Error; err != nil {
             panic(err)
         }
-        db.Model(&entity.Post{}).AddIndex("idx_user", "uid", "valid", "created_at")
+        DB.Model(&entity.Post{}).AddIndex("idx_user", "uid", "valid", "created_at")
     }
-    db.LogMode(true)
+    DB.LogMode(true)
 }
 
 func Setup() {
@@ -34,8 +34,8 @@ func Setup() {
 }
 
 func closeDB() {
-    if db != nil {
-        db.Close()
+    if DB != nil {
+        DB.Close()
     }
 }
 

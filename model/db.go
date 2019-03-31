@@ -18,6 +18,7 @@ func setupDB() {
         if err := DB.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.User{}).Error; err != nil {
             panic(err)
         }
+        DB.Model(&entity.User{}).AddIndex("idx_username", "username")
     }
     if !DB.HasTable(&entity.Post{}) {
         if err := DB.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.Post{}).Error; err != nil {

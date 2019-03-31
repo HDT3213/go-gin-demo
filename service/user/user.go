@@ -34,8 +34,15 @@ func RenderUser(user *entity.User) *entity.UserEntity {
 }
 
 func Register(username string, password string) (*entity.UserEntity, error) {
+    exists, err := UserModel.GetByName(username)
+    if err != nil { // error during access database
+        return nil, err
+    }
+    if exists != nil {
+        return nil, BizError.InvalidForm("username has been used")
+    }
     user := &entity.User{Username:username, Password:password, Valid:true}
-    err := UserModel.Create(user)
+    err = UserModel.Create(user)
     if err != nil {
         return nil, err
     }

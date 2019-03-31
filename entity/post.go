@@ -5,7 +5,7 @@ import (
 )
 
 type Post struct {
-    ID        uint64     `gorm:"primary_key"`
+    ID        uint64     `gorm:"primary_key;auto_increment:false"`
     Uid       uint64
     CreatedAt time.Time
     UpdatedAt time.Time

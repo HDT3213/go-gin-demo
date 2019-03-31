@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-    ID        uint64     `gorm:"primary_key"`
+    ID        uint64     `gorm:"primary_key;auto_increment:false"`
     CreatedAt time.Time
     UpdatedAt time.Time
     Valid     bool

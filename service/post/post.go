@@ -11,17 +11,13 @@ import (
 )
 
 func RenderPosts(posts []*entity.Post) ([]*entity.PostEntity, error) {
-   uidSet := set.Make()
+   uidSet := set.MakeUint64Set()
    for _, post := range posts {
        if post != nil {
            uidSet.Add(post.Uid)
        }
    }
-   rawUids := uidSet.ToArray()
-   uids := make([]uint64, len(rawUids))
-   for i, e := range rawUids {
-       uids[i] = e.(uint64)
-   }
+   uids := uidSet.ToArray()
 
    userEntities, err := UserService.RenderUsersById(uids)
    if err != nil {
@@ -88,5 +84,5 @@ func DeletePost(currentUid uint64, pid uint64) error {
     if post.Uid != currentUid {
         return BizError.Forbidden("not your own post")
     }
-    return PostModel.Delete(post.ID)
+    return PostModel.Delete(post)
 }

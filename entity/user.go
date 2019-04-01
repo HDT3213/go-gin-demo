@@ -17,4 +17,5 @@ type UserEntity struct {
     ID       uint64 `json:"-"`
     IDStr    string `json:"id"`
     Username string `json:"username"`
+    PostCount int32 `json:"postCount"`
 }

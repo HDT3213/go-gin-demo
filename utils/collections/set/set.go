@@ -1,5 +1,7 @@
 package set
 
+import "reflect"
+
 type Set struct {
     hash map[interface{}]bool
 }
@@ -25,12 +27,12 @@ func (set *Set)Has(e interface{}) bool {
     return has
 }
 
-func (set *Set)ToArray() []interface{} {
-    arr := make([]interface{}, set.Len())
+func (set *Set)ToArray(out interface{}) {
+    t := reflect.ValueOf(out).Elem()
     i := 0
     for k := range set.hash {
-       arr[i] = k
-       i++
+        t.Index(i).Set(reflect.ValueOf(k))
+        i++
     }
-    return arr
 }
+

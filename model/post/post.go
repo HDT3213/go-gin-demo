@@ -8,7 +8,11 @@ import (
     "math/rand"
     "github.com/go-gin-demo/errors"
     "github.com/go-gin-demo/model"
+    "github.com/go-gin-demo/model/counter"
+    "github.com/go-gin-demo/utils/collections"
 )
+
+const counterKeyPrefix = "Count:P:"
 
 func genCacheKey(pid uint64) string {
     return fmt.Sprintf("P:%d", pid)
@@ -33,6 +37,7 @@ func Create(post *entity.Post) error {
         return err
     }
     setCache(post)
+    counter.Increase(counterKeyPrefix, post.Uid, 1)
     return nil
 }
 
@@ -145,10 +150,38 @@ func GetMap(pids []uint64) (map[uint64]*entity.Post, error) {
     return postMap, nil
 }
 
-func Delete(pid uint64) error {
+func Delete(post *entity.Post) error {
+    pid := post.ID
     if err := model.DB.Model(&entity.Post{}).Where("id = ? AND valid = 1", pid).Update("valid", 0).Error; err != nil {
         return err
     }
     err := setCache(&entity.Post{ID:pid, Valid:false})
+    counter.Increase(counterKeyPrefix, post.Uid, -1)
     return err
+}
+
+func getUserPostCountFromDB(uid uint64) (int32, error) {
+    var count int32
+    err := model.DB.Model(&entity.Post{}).Where("uid = ? AND valid = 1", uid).Count(&count).Error
+    if err != nil {
+        return -1, err
+    }
+    return count, nil
+}
+
+func GetUserPostCount(uid uint64) (int32, error){
+    return counter.Get(counterKeyPrefix, uid, getUserPostCountFromDB)
+}
+
+func multiGetPostCountFromDB(uids []uint64) (map[uint64]int32, error) {
+    pairs := make([]*collections.IdCountPair, len(uids))
+    err := model.DB.Table("posts").Select("uid AS id, count(*) AS num").Where("uid IN (?) AND valid = 1", uids).Group("uid").Scan(&pairs).Error
+    if err != nil {
+        return nil, err
+    }
+    return collections.ToCountMap(pairs), nil
+}
+
+func GetUserPostCountMap(uids []uint64) (map[uint64]int32, error) {
+    return counter.GetMap(counterKeyPrefix, uids, multiGetPostCountFromDB)
 }

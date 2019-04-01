@@ -4,19 +4,40 @@ import (
     "github.com/go-gin-demo/entity"
     "strconv"
     UserModel "github.com/go-gin-demo/model/user"
+    PostModel "github.com/go-gin-demo/model/post"
     BizError "github.com/go-gin-demo/errors"
     "fmt"
+    "github.com/go-gin-demo/utils/collections/set"
 )
 
-func RenderUsers(users []*entity.User) (entities []*entity.UserEntity) {
-    entities = make([]*entity.UserEntity, len(users))
+func RenderUsers(users []*entity.User) ([]*entity.UserEntity, error) {
+    uidSet := set.MakeUint64Set()
+    for _, user := range users {
+        uidSet.Add(user.ID)
+    }
+    uids := uidSet.ToArray()
+    postCountMap, err := PostModel.GetUserPostCountMap(uids)
+    if err != nil {
+        return nil, err
+    }
+    entities := make([]*entity.UserEntity, len(users))
     for i, user := range users {
+        uid := user.ID
         if user == nil {
             continue
         }
-        entities[i] = &entity.UserEntity{ID:user.ID, IDStr:strconv.FormatUint(user.ID, 10), Username:user.Username}
+        postCount, ok := postCountMap[uid]
+        if !ok {
+            postCount = 0
+        }
+        entities[i] = &entity.UserEntity{
+            ID:user.ID,
+            IDStr:strconv.FormatUint(user.ID, 10),
+            Username:user.Username,
+            PostCount: postCount,
+        }
     }
-    return
+    return entities, nil
 }
 
 func RenderUsersById(uids []uint64) ([]*entity.UserEntity, error) {
@@ -24,13 +45,16 @@ func RenderUsersById(uids []uint64) ([]*entity.UserEntity, error) {
     if err != nil {
         return nil, err
     }
-    return RenderUsers(users), nil
+    return RenderUsers(users)
 }
 
-func RenderUser(user *entity.User) *entity.UserEntity {
+func RenderUser(user *entity.User) (*entity.UserEntity, error) {
     users := []*entity.User{user}
-    entities := RenderUsers(users)
-    return entities[0]
+    entities, err := RenderUsers(users)
+    if err != nil {
+        return nil, err
+    }
+    return entities[0], nil
 }
 
 func Register(username string, password string) (*entity.UserEntity, error) {
@@ -46,7 +70,7 @@ func Register(username string, password string) (*entity.UserEntity, error) {
     if err != nil {
         return nil, err
     }
-    return RenderUser(user), nil
+    return RenderUser(user)
 }
 
 func Login(username string, password string) (*entity.UserEntity, uint64, error) {
@@ -60,7 +84,8 @@ func Login(username string, password string) (*entity.UserEntity, uint64, error)
     if user.Password != password {
         return nil, 0, BizError.InvalidForm("user password mismatch")
     }
-    return RenderUser(user), user.ID, nil
+    userEntity, err := RenderUser(user)
+    return userEntity, user.ID, nil
 }
 
 func GetUser(uid uint64) (*entity.UserEntity, error) {
@@ -71,5 +96,5 @@ func GetUser(uid uint64) (*entity.UserEntity, error) {
     if user == nil {
         return nil, BizError.NotFound(fmt.Sprintf("user not found: %d", uid))
     }
-    return RenderUser(user), nil
+    return RenderUser(user)
 }

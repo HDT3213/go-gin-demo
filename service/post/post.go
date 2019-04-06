@@ -8,6 +8,7 @@ import (
     PostModel "github.com/go-gin-demo/model/post"
     BizError "github.com/go-gin-demo/errors"
     "fmt"
+    UserTimelineModel "github.com/go-gin-demo/model/timeline/user"
 )
 
 func RenderPosts(posts []*entity.Post) ([]*entity.PostEntity, error) {
@@ -59,6 +60,7 @@ func CreatePost(uid uint64, text string) (*entity.PostEntity, error) {
     if err != nil {
         return nil, err
     }
+    UserTimelineModel.Push(post)
     return RenderPost(post)
 }
 
@@ -84,5 +86,10 @@ func DeletePost(currentUid uint64, pid uint64) error {
     if post.Uid != currentUid {
         return BizError.Forbidden("not your own post")
     }
-    return PostModel.Delete(post)
+    err = PostModel.Delete(post)
+    if err != nil {
+        return err
+    }
+    err = UserTimelineModel.Remove(post)
+    return err
 }

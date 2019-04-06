@@ -100,18 +100,7 @@ func MultiGet(uids []uint64) ([]*entity.User, error) {
     }
 
     users := make([]*entity.User, len(vals))
-    for i, val := range vals {
-        user := new(entity.User)
-        str, ok := val.(string)
-        if !ok {
-            continue
-        }
-        err = model.Unmarshal([]byte(str), user)
-        if err != nil {
-            continue
-        }
-        users[i] = user
-    }
+    model.MultiUnmarshal(vals, &users)
 
     for i, uid := range uids {
         if users[i] == nil {

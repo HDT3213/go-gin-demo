@@ -13,6 +13,7 @@ func Setup(app *gin.Engine) {
     app.POST("/login", controller.Login)
     app.GET("/user/:id", controller.GetUser)
     app.GET("/post/:id", controller.GetPost)
+    app.GET("/timeline/user/:uid", controller.GetUserTimeline)
 
     loginRequired := app.Group("")
     loginRequired.Use(middleware.JWT())
@@ -21,5 +22,6 @@ func Setup(app *gin.Engine) {
         loginRequired.GET("/self", controller.Self)
         loginRequired.POST("/post", controller.CreatePost)
         loginRequired.DELETE("/post/:id", controller.DeletePost)
+        loginRequired.GET("/timeline/self", controller.GetSelfTimeline)
     }
 }

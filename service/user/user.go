@@ -91,7 +91,7 @@ func Login(username string, password string) (*entity.UserEntity, uint64, error)
 func GetUser(uid uint64) (*entity.UserEntity, error) {
     user, err := UserModel.Get(uid)
     if err != nil {
-        panic(err)
+        return nil, err
     }
     if user == nil {
         return nil, BizError.NotFound(fmt.Sprintf("user not found: %d", uid))

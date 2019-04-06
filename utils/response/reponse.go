@@ -15,6 +15,14 @@ func Entity(ctx *gin.Context, entity interface{}) {
     })
 }
 
+func Entities(ctx *gin.Context, entities interface{}, total int32) {
+    ctx.JSON(200, gin.H{
+        "success": true,
+        "entities": entities,
+        "total": total,
+    })
+}
+
 func BadRequest(ctx *gin.Context, msg string) {
     ctx.JSON(400, gin.H{
         "success": false,

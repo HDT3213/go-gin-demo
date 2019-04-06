@@ -12,7 +12,7 @@ import (
     "github.com/go-gin-demo/utils/collections"
 )
 
-const counterKeyPrefix = "Count:P:"
+const userPostCounterKeyPrefix = "Count:User:P"
 
 func genCacheKey(pid uint64) string {
     return fmt.Sprintf("P:%d", pid)
@@ -37,7 +37,7 @@ func Create(post *entity.Post) error {
         return err
     }
     setCache(post)
-    counter.Increase(counterKeyPrefix, post.Uid, 1)
+    counter.Increase(userPostCounterKeyPrefix, post.Uid, 1)
     return nil
 }
 
@@ -106,20 +106,8 @@ func MultiGet(pids []uint64) ([]*entity.Post, error) {
     if err != nil {
         return nil, err
     }
-
     posts := make([]*entity.Post, len(vals))
-    for i, val := range vals {
-        post := new(entity.Post)
-        str, ok := val.(string)
-        if !ok {
-            continue
-        }
-        err = model.Unmarshal([]byte(str), post)
-        if err != nil {
-            continue
-        }
-        posts[i] = post
-    }
+    model.MultiUnmarshal(vals, &posts)
 
     for i, pid := range pids {
         if posts[i] == nil {
@@ -156,7 +144,7 @@ func Delete(post *entity.Post) error {
         return err
     }
     err := setCache(&entity.Post{ID:pid, Valid:false})
-    counter.Increase(counterKeyPrefix, post.Uid, -1)
+    counter.Increase(userPostCounterKeyPrefix, post.Uid, -1)
     return err
 }
 
@@ -170,7 +158,7 @@ func getUserPostCountFromDB(uid uint64) (int32, error) {
 }
 
 func GetUserPostCount(uid uint64) (int32, error){
-    return counter.Get(counterKeyPrefix, uid, getUserPostCountFromDB)
+    return counter.Get(userPostCounterKeyPrefix, uid, getUserPostCountFromDB)
 }
 
 func multiGetPostCountFromDB(uids []uint64) (map[uint64]int32, error) {
@@ -183,5 +171,5 @@ func multiGetPostCountFromDB(uids []uint64) (map[uint64]int32, error) {
 }
 
 func GetUserPostCountMap(uids []uint64) (map[uint64]int32, error) {
-    return counter.GetMap(counterKeyPrefix, uids, multiGetPostCountFromDB)
+    return counter.GetMap(userPostCounterKeyPrefix, uids, multiGetPostCountFromDB)
 }

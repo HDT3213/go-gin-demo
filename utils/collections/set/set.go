@@ -1,6 +1,8 @@
 package set
 
-import "reflect"
+import (
+    "reflect"
+)
 
 type Set struct {
     hash map[interface{}]bool
@@ -27,11 +29,18 @@ func (set *Set)Has(e interface{}) bool {
     return has
 }
 
-func (set *Set)ToArray(out interface{}) {
-    t := reflect.ValueOf(out).Elem()
+func (set *Set)ToArray(out interface{}) { // out should be a pointer of slice
+    slice := reflect.ValueOf(out).Elem()
+    if slice.Kind() != reflect.Slice {
+        panic("out is not slice")
+    }
+    if slice.Cap() < set.Len() {
+        panic("out is too small")
+    }
+    slice.SetLen(set.Len())
     i := 0
     for k := range set.hash {
-        t.Index(i).Set(reflect.ValueOf(k))
+        slice.Index(i).Set(reflect.ValueOf(k))
         i++
     }
 }

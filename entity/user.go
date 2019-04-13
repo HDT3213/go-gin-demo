@@ -18,4 +18,7 @@ type UserEntity struct {
     IDStr    string `json:"id"`
     Username string `json:"username"`
     PostCount int32 `json:"postCount"`
+    FollowingCount int32 `json:"followingCount"`
+    FollowerCount int32 `json:"followerCount"`
+    Following bool `json:"following"`
 }

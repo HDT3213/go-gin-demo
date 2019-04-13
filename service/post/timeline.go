@@ -9,7 +9,7 @@ import (
     "fmt"
 )
 
-func GetUserTimeline(uid uint64, start int32, length int32) ([]*entity.PostEntity, int32, error) {
+func GetUserTimeline(currentUid uint64, uid uint64, start int32, length int32) ([]*entity.PostEntity, int32, error) {
     user, err := UserModel.Get(uid)
     if err != nil {
         return nil, -1, err
@@ -35,7 +35,7 @@ func GetUserTimeline(uid uint64, start int32, length int32) ([]*entity.PostEntit
     if err != nil {
         return nil, -1, err
     }
-    entities, err := RenderPosts(posts)
+    entities, err := RenderPosts(currentUid, posts)
     if err != nil {
         return nil, -1, err
     }

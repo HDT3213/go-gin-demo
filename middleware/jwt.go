@@ -25,8 +25,9 @@ func JWT() gin.HandlerFunc {
             return
         }
         if token == "" {
-            response.Forbidden(ctx,"no auth cookie")
-            ctx.Abort()
+            //response.Forbidden(ctx,"no auth cookie")
+            //ctx.Abort()
+            ctx.Next()
             return
         }
         uid, err := utils.ParseAuthToken(token, jwtSecret)

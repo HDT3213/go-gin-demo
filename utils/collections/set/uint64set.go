@@ -35,3 +35,13 @@ func (set *Uint64Set)ToArray() []uint64 {
     }
     return arr
 }
+
+func (set *Uint64Set)ToInterfaceArray() []interface{} {
+    arr := make([]interface{}, set.Len())
+    i := 0
+    for k := range set.hash {
+        arr[i] = k
+        i++
+    }
+    return arr
+}

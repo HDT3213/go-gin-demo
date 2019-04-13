@@ -6,6 +6,7 @@ import (
     "github.com/go-gin-demo/middleware"
     "github.com/go-gin-demo/utils/response"
     "strconv"
+    BizError "github.com/go-gin-demo/errors"
 )
 
 func CreatePost(ctx *gin.Context) {
@@ -29,7 +30,18 @@ func GetPost(ctx *gin.Context) {
         response.BadRequest(ctx, "invalid id: " + ctx.Param("id"))
         return
     }
-    post, err := PostService.GetPost(pid)
+
+    currentUid, err := middleware.GetCurrentUid(ctx)
+    if err != nil {
+        if BizError.IsForbidden(err) {
+            currentUid = 0
+        } else {
+            response.Error(ctx, err)
+            return
+        }
+    }
+
+    post, err := PostService.GetPost(currentUid, pid)
     if err != nil {
         response.Error(ctx, err)
         return

@@ -7,21 +7,26 @@ import (
 )
 
 func Setup(app *gin.Engine) {
+    root := app.Group("")
+    root.Use(middleware.JWT())
+
     app.GET("/", controller.Index)
 
-    app.POST("/register", controller.Register)
-    app.POST("/login", controller.Login)
-    app.GET("/user/:id", controller.GetUser)
-    app.GET("/post/:id", controller.GetPost)
-    app.GET("/timeline/user/:uid", controller.GetUserTimeline)
+    root.POST("/register", controller.Register)
+    root.POST("/login", controller.Login)
+    root.GET("/user/:id", controller.GetUser)
+    root.GET("/self", controller.Self)
 
-    loginRequired := app.Group("")
-    loginRequired.Use(middleware.JWT())
-    {
-        //loginRequired.GET("/users", controller.AllUser)
-        loginRequired.GET("/self", controller.Self)
-        loginRequired.POST("/post", controller.CreatePost)
-        loginRequired.DELETE("/post/:id", controller.DeletePost)
-        loginRequired.GET("/timeline/self", controller.GetSelfTimeline)
-    }
+    root.GET("/post/:id", controller.GetPost)
+    root.POST("/post", controller.CreatePost)
+    root.DELETE("/post/:id", controller.DeletePost)
+    root.GET("/timeline/self", controller.GetSelfTimeline)
+    root.GET("/timeline/user/:uid", controller.GetUserTimeline)
+
+    root.POST("/user/:id/follow", controller.Follow)
+    root.POST("/user/:id/unfollow", controller.UnFollow)
+    root.GET("/following/user/:id", controller.GetUserFollowings)
+    root.GET("/follower/user/:id", controller.GetUserFollowers)
+    root.GET("/following/self", controller.GetSelfFollowings)
+    root.GET("/follower/self", controller.GetSelfFollowers)
 }

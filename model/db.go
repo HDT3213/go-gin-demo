@@ -26,6 +26,12 @@ func setupDB() {
         }
         DB.Model(&entity.Post{}).AddIndex("idx_user", "uid", "valid", "created_at")
     }
+    if !DB.HasTable(&entity.Follow{}) {
+        if err := DB.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&entity.Follow{}).Error; err != nil {
+            panic(err)
+        }
+        DB.Model(&entity.Follow{}).AddIndex("idx_user", "uid", "valid", "created_at")
+    }
     DB.LogMode(true)
 }
 

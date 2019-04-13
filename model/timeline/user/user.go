@@ -19,18 +19,22 @@ func genKey(uid uint64) string {
     return fmt.Sprintf("TL:U:%d", uid)
 }
 
-func cached(uid uint64) bool {
+func cached(uid uint64) (bool, error) {
     key := genKey(uid)
     exists, err := model.Redis.Exists(key).Result()
     if err != nil {
-        return false
+        return false, err
     }
-    return exists > 0
+    return exists > 0, err
 }
 
 func Push(post *entity.Post) error {
     uid := post.Uid
-    if !cached(uid) { // lazy push
+    exist, err := cached(uid)
+    if err != nil {
+        return err
+    }
+    if !exist { // lazy push
         return nil
     }
     timelineItem := entity.MakeTimelineItem(post)
@@ -45,7 +49,11 @@ func Push(post *entity.Post) error {
 
 func Remove(post *entity.Post) error {
     uid := post.Uid
-    if !cached(uid) { // lazy push
+    exists, err := cached(uid)
+    if err != nil {
+        return err
+    }
+    if !exists { // lazy push
         return nil
     }
     timelineItem := entity.MakeTimelineItem(post)
@@ -106,8 +114,12 @@ func Rebuild(uid uint64, start int32, length int32) ([]*entity.TimelineItem, err
     }
     defer lock.Unlock()
 
-    // check
-    if cached(uid) {
+    // check again
+    exists, err := cached(uid)
+    if err != nil {
+        return nil, err
+    }
+    if exists {
         return getFromCache(uid, start, length)
     }
 

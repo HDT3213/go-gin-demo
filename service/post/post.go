@@ -11,7 +11,10 @@ import (
     UserTimelineModel "github.com/go-gin-demo/model/timeline/user"
 )
 
-func RenderPosts(posts []*entity.Post) ([]*entity.PostEntity, error) {
+func RenderPosts(currentUid uint64, posts []*entity.Post) ([]*entity.PostEntity, error) {
+   if len(posts) == 0 {
+       return []*entity.PostEntity{}, nil
+   }
    uidSet := set.MakeUint64Set()
    for _, post := range posts {
        if post != nil {
@@ -20,7 +23,7 @@ func RenderPosts(posts []*entity.Post) ([]*entity.PostEntity, error) {
    }
    uids := uidSet.ToArray()
 
-   userEntities, err := UserService.RenderUsersById(uids)
+   userEntities, err := UserService.RenderUsersById(currentUid, uids)
    if err != nil {
        return nil, err
    }
@@ -37,14 +40,19 @@ func RenderPosts(posts []*entity.Post) ([]*entity.PostEntity, error) {
        if !ok {
            continue
        }
-       entities[i] = &entity.PostEntity{Id:strconv.FormatUint(post.ID, 10), CreatedAt:post.CreatedAt, User:user}
+       entities[i] = &entity.PostEntity{
+           Id:strconv.FormatUint(post.ID, 10),
+           CreatedAt:post.CreatedAt,
+           User:user,
+           Text:post.Text,
+       }
    }
    return entities, nil
 }
 
-func RenderPost(post *entity.Post) (*entity.PostEntity, error) {
+func RenderPost(currentUid uint64, post *entity.Post) (*entity.PostEntity, error) {
     posts := []*entity.Post{post}
-    entities, err := RenderPosts(posts)
+    entities, err := RenderPosts(currentUid, posts)
     if err != nil {
         return nil, err
     }
@@ -61,10 +69,10 @@ func CreatePost(uid uint64, text string) (*entity.PostEntity, error) {
         return nil, err
     }
     UserTimelineModel.Push(post)
-    return RenderPost(post)
+    return RenderPost(uid, post)
 }
 
-func GetPost(pid uint64) (*entity.PostEntity, error) {
+func GetPost(currentUid uint64, pid uint64) (*entity.PostEntity, error) {
     post, err := PostModel.Get(pid)
     if err != nil {
         return nil, err
@@ -72,7 +80,7 @@ func GetPost(pid uint64) (*entity.PostEntity, error) {
     if post == nil {
         return nil,  BizError.NotFound(fmt.Sprintf("post not found: %d", pid))
     }
-    return RenderPost(post)
+    return RenderPost(currentUid, post)
 }
 
 func DeletePost(currentUid uint64, pid uint64) error {

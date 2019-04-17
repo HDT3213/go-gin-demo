@@ -8,6 +8,8 @@ import (
 
 func Setup(app *gin.Engine) {
     root := app.Group("")
+    app.GET("/mq", controller.MQEcho)
+
     root.Use(middleware.JWT())
 
     app.GET("/", controller.Index)

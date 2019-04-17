@@ -2,8 +2,8 @@ package response
 
 import "github.com/gin-gonic/gin"
 
-func Success(context *gin.Context) {
-    context.JSON(200, gin.H{
+func Success(ctx *gin.Context) {
+    ctx.JSON(200, gin.H{
         "success": true,
     })
 }

@@ -2,10 +2,10 @@ package model
 
 import (
     "github.com/go-redis/redis"
-    "fmt"
     "time"
     "github.com/vmihailenco/msgpack"
     "reflect"
+    "log"
 )
 
 var Redis *redis.Client
@@ -21,7 +21,7 @@ func setupRedis() {
     })
 
     pong, err := Redis.Ping().Result()
-    fmt.Println(pong, err)
+    log.Println(pong, err)
 }
 
 func closeCache() {

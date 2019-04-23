@@ -158,6 +158,12 @@ func rebuildInternal(uid uint64, limit int32) ([]*entity.TimelineItem, error) {
     }
 
     key := genKey(uid)
+
+    _, err = model.Redis.Del(key).Result()
+    if err != nil {
+        return nil, err
+    }
+
     _, err = model.Redis.LPush(key, vals...).Result()
     if err != nil {
         return nil, err

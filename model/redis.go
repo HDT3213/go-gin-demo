@@ -5,23 +5,32 @@ import (
     "time"
     "github.com/vmihailenco/msgpack"
     "reflect"
-    "log"
+    "github.com/go-gin-demo/utils/logger"
 )
 
 var Redis *redis.Client
 
-func setupRedis() {
-    var err error
+type RedisSettings struct {
+    Host string `yaml:"host"`
+    Password string `yaml:"password"`
+    DB int `yaml:"db"`
+    PoolSize int `yaml:"pool-size"`
+    PoolTimeout time.Duration `yaml:"pool-timeout"`
+}
+
+func setupRedis(settings *RedisSettings) {
     Redis = redis.NewClient(&redis.Options{
-        Addr:     "localhost:6379",
-        Password: "",
-        DB:       0,
-        PoolSize:     16,
-        PoolTimeout:  10 * time.Second,
+        Addr:     settings.Host,
+        Password: settings.Password,
+        DB:       settings.DB,
+        PoolSize:     settings.PoolSize,
+        PoolTimeout:  settings.PoolTimeout,
     })
 
-    pong, err := Redis.Ping().Result()
-    log.Println(pong, err)
+    _, err := Redis.Ping().Result()
+    if err != nil {
+        panic(err)
+    }
 }
 
 func closeCache() {
@@ -61,6 +70,7 @@ func MultiUnmarshal(vals []interface{}, out interface{}) { // out should be a *[
         }
         err := Unmarshal([]byte(str), elem)
         if err != nil {
+            logger.Warn("unmarshal failed, raw: " + str + ", err: " + err.Error())
             continue
         }
         slice.Index(i).Set(reflect.ValueOf(elem))

@@ -4,13 +4,31 @@ import (
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
     "github.com/go-gin-demo/entity"
+    "fmt"
 )
+
+type DBSettings struct {
+    Dialect string `yaml:"dialect"`
+    Username string `yaml:"username"`
+    Password string `yaml:"password"`
+    Host string `yaml:"host"`
+    DB string `yaml:"db"`
+    Charset string `yaml:"charset"`
+    Location string `yaml:"location"`
+}
 
 var DB *gorm.DB
 
-func setupDB() {
+func setupDB(settings *DBSettings) {
     var err error
-    DB, err = gorm.Open("mysql", "go:password@tcp(127.0.0.1:3306)/go?charset=utf8&parseTime=True&loc=Asia%2fShanghai")
+    DB, err = gorm.Open(settings.Dialect, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=%s",
+        settings.Username,
+        settings.Password,
+        settings.Host,
+        settings.DB,
+        settings.Charset,
+        settings.Location))
+
     if nil != err {
         panic(err)
     }
@@ -35,9 +53,9 @@ func setupDB() {
     DB.LogMode(true)
 }
 
-func Setup() {
-    setupDB()
-    setupRedis()
+func Setup(dbSettings *DBSettings, redisSettings *RedisSettings) {
+    setupDB(dbSettings)
+    setupRedis(redisSettings)
 }
 
 func closeDB() {

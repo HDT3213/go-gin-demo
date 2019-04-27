@@ -19,8 +19,8 @@ const (
 func JWT() gin.HandlerFunc {
     return func(ctx *gin.Context) {
         token, err := ctx.Cookie(authCookie)
-        if err != nil {
-            response.Forbidden(ctx,"no auth cookie")
+        if err != nil && err.Error() != "http: named cookie not present" {
+            response.Forbidden(ctx,"fail to get cookie")
             ctx.Abort()
             return
         }

@@ -1,0 +1,30 @@
+log:
+  path: logs
+  name: api
+  time-format: 2006-01-02
+  ext: log
+
+db:
+  dialect: mysql
+  host: 127.0.0.1:3306
+  username: go
+  password: password
+  db: go
+  charset: utf8
+  location: Asia%2fShanghai
+
+redis:
+  host: localhost:6379
+  password:
+  db: 0
+  pool-size: 16
+  pool-timeout: 10s
+
+rabbit:
+  username: go
+  password: password
+  url: localhost:5672
+  vhost: go
+  exchange: go
+  queue: general
+  routingKey: general

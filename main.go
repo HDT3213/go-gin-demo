@@ -8,7 +8,8 @@ import (
     "github.com/go-gin-demo/router"
     MQCore "github.com/go-gin-demo/mq/core"
     MQRouter "github.com/go-gin-demo/mq/router"
-    "log"
+    "github.com/go-gin-demo/utils/logger"
+    "github.com/go-gin-demo/config"
 )
 
 func startServer() {
@@ -17,14 +18,16 @@ func startServer() {
         port = "8080"
     }
     // init db
-    model.Setup()
+    model.Setup(&settings.DB, &settings.Redis)
     defer model.Close()
 
-    MQCore.SetupRabbitMQ()
+    MQCore.SetupRabbitMQ(&settings.Rabbit)
     defer MQCore.CloseRabbitMQ()
 
     app := gin.Default()
     router.Setup(app)
+
+    logger.Info("start server")
 
     // run
     endless.ListenAndServe(":" + port, app)
@@ -32,24 +35,34 @@ func startServer() {
 
 func startMqConsumer() {
     // init db
-    model.Setup()
+    model.Setup(&settings.DB, &settings.Redis)
     defer model.Close()
 
-    MQCore.SetupRabbitMQ()
+    MQCore.SetupRabbitMQ(&settings.Rabbit)
     defer MQCore.CloseRabbitMQ()
 
-    log.Println("start consume")
+    logger.Info("start consume")
     MQCore.Consume(MQRouter.GetConsumerMap())
 }
 
+var settings *config.Settings
+
 func main() {
+    configPath := os.Getenv("CONFIG")
+    if configPath == "" {
+        configPath = "./config.yml"
+    }
+    settings = config.Setup(configPath)
+
+    logger.Setup(&settings.Log)
+
     role := os.Getenv("ROLE")
     if role == "server" || role == "" {
         startServer()
     } else if role == "consumer" {
         startMqConsumer()
     } else {
-        log.Fatalf("illegal role: %s", role)
+        logger.Fatal("illegal role: %s", role)
     }
 
 }

@@ -3,8 +3,8 @@ package core
 import (
     "github.com/streadway/amqp"
     "encoding/binary"
-    "log"
     "fmt"
+    "github.com/go-gin-demo/utils/logger"
 )
 
 var MQ *amqp.Connection
@@ -19,9 +19,26 @@ const (
     routingKey = "general"
 )
 
-func SetupRabbitMQ() error {
+type Settings struct {
+    Host string `yaml:"host"`
+    Username string `yaml:"username"`
+    Password string `yaml:"password"`
+    VHost string `yaml:"vhost"`
+    Exchange string `yaml:"exchange"`
+    Queue string `yaml:"queue"`
+    RoutingKey string `yaml:"routing-key"`
+}
+
+var settings *Settings
+
+func SetupRabbitMQ(rabbitSettings *Settings) error {
+    settings = rabbitSettings
     var err error
-    MQ, err = amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/%s", username, password, url, vhost))
+    MQ, err = amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/%s",
+        settings.Username,
+        settings.Password,
+        settings.Host,
+        settings.VHost))
     if err != nil {
         return err
     }
@@ -33,7 +50,7 @@ func SetupRabbitMQ() error {
 
     // prepare exchange
     err = ch.ExchangeDeclare(
-        exchange,
+        settings.Exchange,
         "direct",
         true,
         false,
@@ -47,7 +64,7 @@ func SetupRabbitMQ() error {
 
     // prepare queue
     _, err = ch.QueueDeclare(
-        queue,
+        settings.Queue,
         false,
         false,
         false,
@@ -59,9 +76,9 @@ func SetupRabbitMQ() error {
     }
 
     err = ch.QueueBind(
-        queue,
-        routingKey,
-        exchange,
+        settings.Queue,
+        settings.RoutingKey,
+        settings.Exchange,
         false,
         nil,
     )
@@ -96,8 +113,8 @@ func Publish(msg *Msg) error {
     copy(bytes[4:], msg.Payload)
 
     err := ch.Publish(
-        exchange,
-        routingKey,
+        settings.Exchange,
+        settings.RoutingKey,
         false,
         false,
         amqp.Publishing {
@@ -114,7 +131,7 @@ func Consume(consumerMap map[uint32]func(*Msg)) error {
     defer CloseChannel(ch)
 
     deliveries, err := ch.Consume(
-       queue,
+       settings.Queue,
         "",
         false,
         false,
@@ -134,7 +151,7 @@ func Consume(consumerMap map[uint32]func(*Msg)) error {
             code := binary.LittleEndian.Uint32(codeBytes)
             consumer, ok := consumerMap[code]
             if !ok {
-                log.Println(fmt.Sprintf("no consumer found for: %d", code))
+                logger.Warn(fmt.Sprintf("no consumer found for: %d", code))
                 delivery.Ack(false)
                 continue
             }

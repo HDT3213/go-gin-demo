@@ -5,6 +5,7 @@ import (
     "github.com/go-gin-demo/utils"
     "github.com/go-gin-demo/utils/response"
     "github.com/dgrijalva/jwt-go"
+    UserModel "github.com/go-gin-demo/model/user"
     "time"
     BizError "github.com/go-gin-demo/errors"
 )
@@ -41,6 +42,15 @@ func JWT() gin.HandlerFunc {
         }
         if ctx.Keys == nil {
             ctx.Keys = make(map[string]interface{})
+        }
+        user, err := UserModel.Get(uid)
+        if err != nil {
+            response.Error(ctx, err)
+            ctx.Abort()
+        }
+        if user == nil {
+            response.Forbidden(ctx,"current user invalid")
+            ctx.Abort()
         }
         ctx.Keys["uid"] = uid
         ctx.Next()

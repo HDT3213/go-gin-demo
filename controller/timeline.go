@@ -58,3 +58,22 @@ func GetSelfTimeline(ctx *gin.Context) {
     }
     response.Entities(ctx, posts, total)
 }
+
+func GetFollowingTimeline(ctx *gin.Context) {
+    uid, err := middleware.GetCurrentUid(ctx)
+    if err != nil {
+        response.Error(ctx, err)
+        return
+    }
+    start, length, err := utils.GetPage(ctx, 0, 10)
+    if err != nil {
+        response.Error(ctx, err)
+        return
+    }
+    posts, total, err := PostService.GetFollowingTimeline(uid, start, length)
+    if err != nil {
+        response.Error(ctx, err)
+        return
+    }
+    response.Entities(ctx, posts, total)
+}

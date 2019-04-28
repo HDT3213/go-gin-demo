@@ -9,6 +9,7 @@ import (
     RLock "github.com/bsm/redis-lock"
     "errors"
     "github.com/go-gin-demo/utils/collections"
+    "strconv"
 )
 
 const (
@@ -187,6 +188,34 @@ func GetFollowingIn(currentUid uint64, uids []uint64) ([]uint64, error) {
     return model.Intersect(key, uids)
 }
 
+func GetAllFollowings(uid uint64) ([]uint64, error) {
+    isCached, err := cached(uid)
+    if err != nil {
+        return nil, err
+    }
+    if !isCached {
+        err = Rebuild(uid)
+        if err != nil {
+            return nil, err
+        }
+    }
+    key := genKey(uid)
+    vals, err := model.Redis.SMembers(key).Result()
+    if err != nil {
+        return nil, err
+    }
+
+    followings := make([]uint64, len(vals))
+    for i, val := range vals {
+        id, err := strconv.ParseUint(val, 10, 64)
+        if err != nil {
+            return nil, err
+        }
+        followings[i] = id
+    }
+    return followings, nil
+}
+
 func getFollowingCountFromDB(uid uint64) (int32, error) {
     var count int32
     err := model.DB.Model(&entity.Follow{}).Where("uid = ? AND valid = 1", uid).Count(&count).Error
@@ -225,7 +254,6 @@ func getFollowerCountFromDB(uid uint64) (int32, error) {
 func GetFollowerCount(uid uint64) (int32, error) {
     return counter.Get(userFollowerCounterKeyPrefix, uid, getFollowerCountFromDB)
 }
-
 
 func multiGetFollowerCountFromDB(uids []uint64) (map[uint64]int32, error) {
     pairs := make([]*collections.IdCountPair, len(uids))

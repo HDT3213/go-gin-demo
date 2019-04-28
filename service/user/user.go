@@ -6,6 +6,7 @@ import (
     UserModel "github.com/go-gin-demo/model/user"
     PostModel "github.com/go-gin-demo/model/post"
     FollowModel "github.com/go-gin-demo/model/follow"
+    FollowTimelineModel "github.com/go-gin-demo/model/timeline/follow"
     BizError "github.com/go-gin-demo/errors"
     "fmt"
     "github.com/go-gin-demo/utils/collections/set"
@@ -167,7 +168,11 @@ func Follow(currentUid uint64, followingUid uint64) error {
         FollowingUid: followingUid,
         Valid: true,
     })
-    return err
+    if err != nil {
+        return err
+    }
+    FollowTimelineModel.Del(currentUid)
+    return nil
 }
 
 func UnFollow(currentUid uint64, followingUid uint64) error {
@@ -194,7 +199,11 @@ func UnFollow(currentUid uint64, followingUid uint64) error {
     }
 
     err = FollowModel.Delete(currentUid, followingUid)
-    return err
+    if err != nil {
+        return err
+    }
+    FollowTimelineModel.Del(currentUid)
+    return nil
 }
 
 func GetFollowings(currentUid uint64, uid uint64, start int32, length int32) ([]*entity.UserEntity, int32, error) {

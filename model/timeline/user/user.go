@@ -8,6 +8,9 @@ import (
     "time"
     RLock "github.com/bsm/redis-lock"
     "errors"
+    "github.com/go-gin-demo/utils/collections/set"
+    "github.com/go-gin-demo/utils/logger"
+    "github.com/go-redis/redis"
 )
 
 const (
@@ -15,6 +18,7 @@ const (
     defaultFetchLimit = 1024
 )
 
+// uid -> list(TimelineItem)
 func genKey(uid uint64) string {
     return fmt.Sprintf("TL:U:%d", uid)
 }
@@ -115,11 +119,16 @@ func Rebuild(uid uint64, start int32, length int32) ([]*entity.TimelineItem, err
     defer lock.Unlock()
 
     // check again
-    exists, err := cached(uid)
+    cachedSize, err := model.Redis.LLen(key).Result()
     if err != nil {
         return nil, err
     }
-    if exists {
+    postCount, err := PostModel.GetUserPostCount(uid)
+    if err != nil {
+        return nil, err
+    }
+    // if cached needs or cached all, get from cache, do not rebuild
+    if int64(start + length) <= cachedSize || cachedSize == int64(postCount) {
         return getFromCache(uid, start, length)
     }
 
@@ -164,7 +173,7 @@ func rebuildInternal(uid uint64, limit int32) ([]*entity.TimelineItem, error) {
         return nil, err
     }
 
-    _, err = model.Redis.LPush(key, vals...).Result()
+    _, err = model.Redis.RPush(key, vals...).Result()
     if err != nil {
         return nil, err
     }
@@ -198,4 +207,52 @@ func Get(uid uint64, start int32, length int32) ([]*entity.TimelineItem, error) 
 
     // get from cache
     return getFromCache(uid, start, length)
+}
+
+// limit should not be greater than defaultFetchLimit
+func MultiGet(uids []uint64, limit int32) (map[uint64][]*entity.TimelineItem, error) {
+    if limit == 0 {
+        return make(map[uint64][]*entity.TimelineItem), nil
+    }
+
+    cmdMap := make(map[uint64]*redis.StringSliceCmd)
+    pipe := model.Redis.Pipeline()
+    for _, uid := range uids {
+        key := genKey(uid)
+        cmdMap[uid] = pipe.LRange(key, 0, int64(limit - 1))
+    }
+
+    _, err := pipe.Exec()
+    if err != nil {
+        return nil, err
+    }
+
+    timelineMap := make(map[uint64][]*entity.TimelineItem)
+    missedUidSet := set.MakeUint64Set()
+    for uid, cmd := range cmdMap {
+        vals, err := cmd.Result()
+        if err != nil {
+            return nil, err
+        }
+        timeline := make([]*entity.TimelineItem, len(vals))
+        model.MultiUnmarshalStr(vals, &timeline)
+        // if len(timeline) > 0 then len(timeline) >= defaultFetchLimit
+        // ignore len(timeline) < limit
+        if len(timeline) > 0 {
+            timelineMap[uid] = timeline
+        } else {
+            missedUidSet.Add(uid)
+        }
+    }
+
+    missedUids := missedUidSet.ToArray()
+    for _, uid := range missedUids {
+        timeline, err := Rebuild(uid, 0, limit)
+        if err != nil {
+            logger.Warn(fmt.Sprintf("err during rebuild, uid: %d, err: %s", uid, err.Error()))
+            continue
+        }
+        timelineMap[uid] = timeline
+    }
+    return timelineMap, nil
 }

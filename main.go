@@ -47,7 +47,7 @@ func startMqConsumer() {
 
 var settings *config.Settings
 
-func main() {
+func start()  {
     configPath := os.Getenv("CONFIG")
     if configPath == "" {
         configPath = "./config.yml"
@@ -64,5 +64,8 @@ func main() {
     } else {
         logger.Fatal("illegal role: %s", role)
     }
+}
 
+func main() {
+   start()
 }

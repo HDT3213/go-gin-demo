@@ -23,6 +23,7 @@ func Setup(app *gin.Engine) {
     root.POST("/post", controller.CreatePost)
     root.DELETE("/post/:id", controller.DeletePost)
     root.GET("/timeline/self", controller.GetSelfTimeline)
+    root.GET("/timeline/following", controller.GetFollowingTimeline)
     root.GET("/timeline/user/:uid", controller.GetUserTimeline)
 
     root.POST("/user/:id/follow", controller.Follow)

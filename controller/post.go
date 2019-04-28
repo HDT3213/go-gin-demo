@@ -16,6 +16,10 @@ func CreatePost(ctx *gin.Context) {
         return
     }
     text := ctx.PostForm("text")
+    if text == "" {
+        response.Error(ctx, BizError.InvalidForm("text is required"))
+        return
+    }
     post, err := PostService.CreatePost(uid, text)
     if err != nil {
         response.Error(ctx, err)

@@ -43,6 +43,7 @@ func Register(ctx *gin.Context) {
         response.Error(ctx, err)
         return
     }
+    middleware.SetCurrentUid(ctx, entity.ID)
     response.Entity(ctx, entity)
 }
 

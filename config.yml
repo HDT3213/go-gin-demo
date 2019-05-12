@@ -28,3 +28,10 @@ rabbit:
   exchange: go
   queue: general
   routingKey: general
+
+canal:
+  addr: 127.0.0.1:3306
+  username: canal
+  password: password
+  db: go
+  tables: [follows, posts, users]

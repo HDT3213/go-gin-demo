@@ -3,7 +3,7 @@ package controller
 import (
     "github.com/gin-gonic/gin"
     "strconv"
-    "github.com/go-gin-demo/middleware"
+    "github.com/go-gin-demo/middleware/auth"
     "github.com/go-gin-demo/utils/response"
     UserService "github.com/go-gin-demo/service/user"
     BizError "github.com/go-gin-demo/errors"
@@ -17,7 +17,7 @@ func GetUser(ctx *gin.Context)  {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0
@@ -43,7 +43,7 @@ func Register(ctx *gin.Context) {
         response.Error(ctx, err)
         return
     }
-    middleware.SetCurrentUid(ctx, entity.ID)
+    auth.SetCurrentUid(ctx, entity.ID)
     response.Entity(ctx, entity)
 }
 
@@ -55,12 +55,12 @@ func Login(ctx *gin.Context) {
         response.Error(ctx, err)
         return
     }
-    middleware.SetCurrentUid(ctx, uid)
+    auth.SetCurrentUid(ctx, uid)
     response.Success(ctx)
 }
 
 func Self(ctx *gin.Context) {
-    uid, err := middleware.GetCurrentUid(ctx)
+    uid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -74,7 +74,7 @@ func Self(ctx *gin.Context) {
 }
 
 func Follow(ctx *gin.Context) {
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -94,7 +94,7 @@ func Follow(ctx *gin.Context) {
 }
 
 func UnFollow(ctx *gin.Context) {
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -125,7 +125,7 @@ func GetUserFollowings(ctx *gin.Context) {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0
@@ -150,7 +150,7 @@ func GetSelfFollowings(ctx *gin.Context) {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0
@@ -180,7 +180,7 @@ func GetUserFollowers(ctx *gin.Context) {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0
@@ -205,7 +205,7 @@ func GetSelfFollowers(ctx *gin.Context) {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0

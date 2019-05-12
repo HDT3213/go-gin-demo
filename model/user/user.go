@@ -25,7 +25,7 @@ func setCache(user *entity.User) error {
 }
 
 func Create(user *entity.User) error {
-    user.ID = utils.Hash64(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int()))
+    user.ID = uint64(utils.Hash32(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int())))
     if model.DB.NewRecord(*user) {
         return BizError.InvalidForm("user exists")
     }

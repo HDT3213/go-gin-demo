@@ -3,14 +3,14 @@ package controller
 import (
     "github.com/gin-gonic/gin"
     PostService "github.com/go-gin-demo/service/post"
-    "github.com/go-gin-demo/middleware"
+    "github.com/go-gin-demo/middleware/auth"
     "github.com/go-gin-demo/utils/response"
     "strconv"
     BizError "github.com/go-gin-demo/errors"
 )
 
 func CreatePost(ctx *gin.Context) {
-    uid, err := middleware.GetCurrentUid(ctx)
+    uid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -35,7 +35,7 @@ func GetPost(ctx *gin.Context) {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0
@@ -60,7 +60,7 @@ func DeletePost(ctx *gin.Context) {
         response.BadRequest(ctx, "invalid id: " + ctx.Param("id"))
         return
     }
-    uid, err := middleware.GetCurrentUid(ctx)
+    uid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return

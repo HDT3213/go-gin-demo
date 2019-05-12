@@ -45,6 +45,16 @@ func startMqConsumer() {
     MQCore.Consume(MQRouter.GetConsumerMap())
 }
 
+func startCanalListener() {
+    model.Setup(&settings.DB, &settings.Redis)
+    defer model.Close()
+
+    model.SetupCanal(&settings.Canal)
+    defer model.CloseCanal()
+
+    model.Listen()
+}
+
 var settings *config.Settings
 
 func start()  {
@@ -61,6 +71,8 @@ func start()  {
         startServer()
     } else if role == "consumer" {
         startMqConsumer()
+    } else if role == "canal" {
+        startCanalListener()
     } else {
         logger.Fatal("illegal role: %s", role)
     }

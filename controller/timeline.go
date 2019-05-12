@@ -6,7 +6,7 @@ import (
     "github.com/go-gin-demo/utils/response"
     PostService "github.com/go-gin-demo/service/post"
     "github.com/go-gin-demo/utils"
-    "github.com/go-gin-demo/middleware"
+    "github.com/go-gin-demo/middleware/auth"
     BizError "github.com/go-gin-demo/errors"
 )
 
@@ -22,7 +22,7 @@ func GetUserTimeline(ctx *gin.Context) {
         return
     }
 
-    currentUid, err := middleware.GetCurrentUid(ctx)
+    currentUid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         if BizError.IsForbidden(err) {
             currentUid = 0
@@ -41,7 +41,7 @@ func GetUserTimeline(ctx *gin.Context) {
 }
 
 func GetSelfTimeline(ctx *gin.Context) {
-    uid, err := middleware.GetCurrentUid(ctx)
+    uid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -60,7 +60,7 @@ func GetSelfTimeline(ctx *gin.Context) {
 }
 
 func GetFollowingTimeline(ctx *gin.Context) {
-    uid, err := middleware.GetCurrentUid(ctx)
+    uid, err := auth.GetCurrentUid(ctx)
     if err != nil {
         response.Error(ctx, err)
         return

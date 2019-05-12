@@ -29,7 +29,7 @@ func setCache(post *entity.Post) error {
 }
 
 func Create(post *entity.Post) error {
-    post.ID = utils.Hash64(strconv.FormatUint(post.Uid, 10) + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int()))
+    post.ID = uint64(utils.Hash32(strconv.FormatUint(post.Uid, 10) + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int())))
     if model.DB.NewRecord(post) {
         return errors.InvalidForm("post exists")
     }

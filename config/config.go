@@ -13,6 +13,7 @@ type Settings struct {
    DB model.DBSettings
    Redis model.RedisSettings
    Rabbit MQCore.Settings
+   Canal model.CanalSettings
 }
 
 func Setup(path string) (*Settings) {

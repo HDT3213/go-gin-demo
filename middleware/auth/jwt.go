@@ -1,8 +1,7 @@
-package middleware
+package auth
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/utils"
     "github.com/go-gin-demo/utils/response"
     "github.com/dgrijalva/jwt-go"
     UserModel "github.com/go-gin-demo/model/user"
@@ -31,7 +30,7 @@ func JWT() gin.HandlerFunc {
             ctx.Next()
             return
         }
-        uid, err := utils.ParseAuthToken(token, jwtSecret)
+        uid, err := ParseAuthToken(token, jwtSecret)
         if err != nil {
             if err, ok := err.(*jwt.ValidationError); ok && err.Errors == jwt.ValidationErrorExpired {
                 response.Forbidden(ctx,"token expired")
@@ -58,7 +57,7 @@ func JWT() gin.HandlerFunc {
 }
 
 func SetCurrentUid(ctx *gin.Context, uid uint64) {
-    token, err := utils.GenAuthToken(uid, expireTime * time.Hour, jwtSecret)
+    token, err := GenAuthToken(uid, expireTime * time.Hour, jwtSecret)
     if err != nil {
         panic(err)
     }

@@ -2,7 +2,7 @@ package router
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/middleware"
+    "github.com/go-gin-demo/middleware/auth"
     "github.com/go-gin-demo/controller"
 )
 
@@ -10,7 +10,7 @@ func Setup(app *gin.Engine) {
     root := app.Group("")
     app.GET("/mq", controller.MQEcho)
 
-    root.Use(middleware.JWT())
+    root.Use(auth.JWT())
 
     app.GET("/", controller.Index)
 

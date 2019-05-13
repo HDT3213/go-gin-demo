@@ -4,12 +4,14 @@ import (
     "fmt"
     "github.com/go-gin-demo/entity"
     "strconv"
-    "github.com/go-gin-demo/utils"
+    "github.com/go-gin-demo/lib/hash"
     "math/rand"
-    "github.com/go-gin-demo/errors"
-    "github.com/go-gin-demo/model"
-    "github.com/go-gin-demo/model/counter"
-    "github.com/go-gin-demo/utils/collections"
+    "github.com/go-gin-demo/lib/errors"
+    "github.com/go-gin-demo/lib/collections"
+    "github.com/go-gin-demo/lib/time"
+    "github.com/go-gin-demo/lib/cache/redis"
+    "github.com/go-gin-demo/lib/cache/redis/counter"
+    "github.com/go-gin-demo/context/context"
 )
 
 const userPostCounterKeyPrefix = "Count:User:P"
@@ -20,30 +22,30 @@ func genCacheKey(pid uint64) string {
 
 func setCache(post *entity.Post) error {
     key := genCacheKey(post.ID)
-    val, err := model.Marshal(post)
+    val, err := redis.Marshal(post)
     if err != nil {
         return err
     }
-    _, err = model.Redis.Set(key, val, 0).Result()
+    _, err = context.Redis.Set(key, val, 0).Result()
     return err
 }
 
 func Create(post *entity.Post) error {
-    post.ID = uint64(utils.Hash32(strconv.FormatUint(post.Uid, 10) + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int())))
-    if model.DB.NewRecord(post) {
+    post.ID = uint64(hash.Hash32(strconv.FormatUint(post.Uid, 10) + strconv.Itoa(int(time.Now())) + strconv.Itoa(rand.Int())))
+    if context.DB.NewRecord(post) {
         return errors.InvalidForm("post exists")
     }
-    if err := model.DB.Create(post).Error; err != nil {
+    if err := context.DB.Create(post).Error; err != nil {
         return err
     }
     setCache(post)
-    counter.Increase(userPostCounterKeyPrefix, post.Uid, 1)
+    counter.Increase(context.Redis, userPostCounterKeyPrefix, post.Uid, 1)
     return nil
 }
 
 func getFromCache(pid uint64) (*entity.Post, error) { // may get a post which valid=false
     key := genCacheKey(pid)
-    val, err := model.Redis.Get(key).Result()
+    val, err := context.Redis.Get(key).Result()
     if err != nil {
         if err.Error() == "redis: nil" {
             return nil, nil
@@ -52,7 +54,7 @@ func getFromCache(pid uint64) (*entity.Post, error) { // may get a post which va
         }
     }
     post := new(entity.Post)
-    err = model.Unmarshal([]byte(val), post)
+    err = redis.Unmarshal([]byte(val), post)
     if err != nil {
         return nil, err
     }
@@ -61,7 +63,7 @@ func getFromCache(pid uint64) (*entity.Post, error) { // may get a post which va
 
 func getFromDB(pid uint64) (*entity.Post, error) {
     post := new(entity.Post)
-    err := model.DB.Where("valid = 1").First(&post, pid).Error
+    err := context.DB.Where("valid = 1").First(&post, pid).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
     }
@@ -102,12 +104,12 @@ func MultiGet(pids []uint64) ([]*entity.Post, error) {
         keys[i] = genCacheKey(uid)
     }
 
-    vals, err := model.Redis.MGet(keys...).Result()
+    vals, err := context.Redis.MGet(keys...).Result()
     if err != nil {
         return nil, err
     }
     posts := make([]*entity.Post, len(vals))
-    model.MultiUnmarshal(vals, &posts)
+    redis.MultiUnmarshal(vals, &posts)
 
     for i, pid := range pids {
         if posts[i] == nil {
@@ -140,17 +142,17 @@ func GetMap(pids []uint64) (map[uint64]*entity.Post, error) {
 
 func Delete(post *entity.Post) error {
     pid := post.ID
-    if err := model.DB.Model(&entity.Post{}).Where("id = ? AND valid = 1", pid).Update("valid", 0).Error; err != nil {
+    if err := context.DB.Model(&entity.Post{}).Where("id = ? AND valid = 1", pid).Update("valid", 0).Error; err != nil {
         return err
     }
     err := setCache(&entity.Post{ID:pid, Valid:false})
-    counter.Increase(userPostCounterKeyPrefix, post.Uid, -1)
+    counter.Increase(context.Redis, userPostCounterKeyPrefix, post.Uid, -1)
     return err
 }
 
 func getUserPostCountFromDB(uid uint64) (int32, error) {
     var count int32
-    err := model.DB.Model(&entity.Post{}).Where("uid = ? AND valid = 1", uid).Count(&count).Error
+    err := context.DB.Model(&entity.Post{}).Where("uid = ? AND valid = 1", uid).Count(&count).Error
     if err != nil {
         return -1, err
     }
@@ -158,12 +160,12 @@ func getUserPostCountFromDB(uid uint64) (int32, error) {
 }
 
 func GetUserPostCount(uid uint64) (int32, error){
-    return counter.Get(userPostCounterKeyPrefix, uid, getUserPostCountFromDB)
+    return counter.Get(context.Redis, userPostCounterKeyPrefix, uid, getUserPostCountFromDB)
 }
 
 func multiGetPostCountFromDB(uids []uint64) (map[uint64]int32, error) {
     pairs := make([]*collections.IdCountPair, len(uids))
-    err := model.DB.Table("posts").Select("uid AS id, count(*) AS num").Where("uid IN (?) AND valid = 1", uids).Group("uid").Scan(&pairs).Error
+    err := context.DB.Table("posts").Select("uid AS id, count(*) AS num").Where("uid IN (?) AND valid = 1", uids).Group("uid").Scan(&pairs).Error
     if err != nil {
         return nil, err
     }
@@ -171,5 +173,5 @@ func multiGetPostCountFromDB(uids []uint64) (map[uint64]int32, error) {
 }
 
 func GetUserPostCountMap(uids []uint64) (map[uint64]int32, error) {
-    return counter.GetMap(userPostCounterKeyPrefix, uids, multiGetPostCountFromDB)
+    return counter.GetMap(context.Redis, userPostCounterKeyPrefix, uids, multiGetPostCountFromDB)
 }

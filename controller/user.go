@@ -4,10 +4,10 @@ import (
     "github.com/gin-gonic/gin"
     "strconv"
     "github.com/go-gin-demo/middleware/auth"
-    "github.com/go-gin-demo/utils/response"
+    "github.com/go-gin-demo/lib/response"
     UserService "github.com/go-gin-demo/service/user"
-    BizError "github.com/go-gin-demo/errors"
-    "github.com/go-gin-demo/utils"
+    BizError "github.com/go-gin-demo/lib/errors"
+    "github.com/go-gin-demo/lib/request"
 )
 
 func GetUser(ctx *gin.Context)  {
@@ -119,7 +119,7 @@ func GetUserFollowings(ctx *gin.Context) {
         response.BadRequest(ctx, "invalid uid: " + ctx.Param("id"))
         return
     }
-    start, length, err := utils.GetPage(ctx,0 , 10)
+    start, length, err := request.GetPage(ctx,0 , 10)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -144,7 +144,7 @@ func GetUserFollowings(ctx *gin.Context) {
 }
 
 func GetSelfFollowings(ctx *gin.Context) {
-    start, length, err := utils.GetPage(ctx,0 , 10)
+    start, length, err := request.GetPage(ctx,0 , 10)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -174,7 +174,7 @@ func GetUserFollowers(ctx *gin.Context) {
         response.BadRequest(ctx, "invalid uid: " + ctx.Param("id"))
         return
     }
-    start, length, err := utils.GetPage(ctx,0 , 10)
+    start, length, err := request.GetPage(ctx,0 , 10)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -199,7 +199,7 @@ func GetUserFollowers(ctx *gin.Context) {
 }
 
 func GetSelfFollowers(ctx *gin.Context) {
-    start, length, err := utils.GetPage(ctx,0 , 10)
+    start, length, err := request.GetPage(ctx,0 , 10)
     if err != nil {
         response.Error(ctx, err)
         return

@@ -1,22 +1,10 @@
-package core
+package mq
 
 import (
     "github.com/streadway/amqp"
     "encoding/binary"
     "fmt"
-    "github.com/go-gin-demo/utils/logger"
-)
-
-var MQ *amqp.Connection
-
-const (
-    username = "go"
-    password = "password"
-    url =  "localhost:5672"
-    vhost = "go"
-    exchange = "go"
-    queue = "general"
-    routingKey = "general"
+    "github.com/go-gin-demo/lib/logger"
 )
 
 type Settings struct {
@@ -29,23 +17,25 @@ type Settings struct {
     RoutingKey string `yaml:"routing-key"`
 }
 
-var settings *Settings
+type RabbitMQ struct {
+    Conn *amqp.Connection
+    Settings *Settings
+}
 
-func SetupRabbitMQ(rabbitSettings *Settings) error {
-    settings = rabbitSettings
+func SetupRabbitMQ(settings *Settings) (*RabbitMQ, error) {
     var err error
-    MQ, err = amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/%s",
+    conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/%s",
         settings.Username,
         settings.Password,
         settings.Host,
         settings.VHost))
     if err != nil {
-        return err
+        return nil, err
     }
-    ch, err := MQ.Channel()
+    ch, err := conn.Channel()
     defer ch.Close()
     if err != nil {
-        return err
+        return nil, err
     }
 
     // prepare exchange
@@ -59,7 +49,7 @@ func SetupRabbitMQ(rabbitSettings *Settings) error {
         nil,
     )
     if err != nil {
-        return err
+        return nil, err
     }
 
     // prepare queue
@@ -72,7 +62,7 @@ func SetupRabbitMQ(rabbitSettings *Settings) error {
         nil,
     )
     if err != nil {
-        return err
+        return nil, err
     }
 
     err = ch.QueueBind(
@@ -83,38 +73,33 @@ func SetupRabbitMQ(rabbitSettings *Settings) error {
         nil,
     )
     if err != nil {
+        return nil, err
+    }
+    return &RabbitMQ{
+        Conn: conn,
+        Settings: settings,
+    }, nil
+}
+
+func (mq *RabbitMQ)Close() {
+    mq.Conn.Close()
+}
+
+
+func (mq *RabbitMQ)Publish(msg *Msg) error {
+    ch, err := mq.Conn.Channel()
+    if err != nil {
         return err
     }
-    return nil
-}
-
-func CloseRabbitMQ() {
-    MQ.Close()
-}
-
-func GetChannel() *amqp.Channel {
-    ch, err := MQ.Channel()
-    if err != nil {
-        panic(err)
-    }
-    return ch
-}
-
-func CloseChannel(ch *amqp.Channel) {
-    ch.Close()
-}
-
-func Publish(msg *Msg) error {
-    ch := GetChannel()
-    defer CloseChannel(ch)
+    defer ch.Close()
 
     bytes := make([]byte, 4 + len(msg.Payload))
     binary.LittleEndian.PutUint32(bytes, msg.Code)
     copy(bytes[4:], msg.Payload)
 
-    err := ch.Publish(
-        settings.Exchange,
-        settings.RoutingKey,
+    err = ch.Publish(
+        mq.Settings.Exchange,
+        mq.Settings.RoutingKey,
         false,
         false,
         amqp.Publishing {
@@ -126,12 +111,15 @@ func Publish(msg *Msg) error {
     return err
 }
 
-func Consume(consumerMap map[uint32]func(*Msg)) error {
-    ch := GetChannel()
-    defer CloseChannel(ch)
+func (mq *RabbitMQ)Consume(consumerMap map[uint32]func(*Msg)) error {
+    ch, err := mq.Conn.Channel()
+    if err != nil {
+        return err
+    }
+    defer ch.Close()
 
     deliveries, err := ch.Consume(
-       settings.Queue,
+       mq.Settings.Queue,
         "",
         false,
         false,

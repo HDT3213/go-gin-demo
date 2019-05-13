@@ -1,9 +1,9 @@
-package utils
+package request
 
 import (
     "github.com/gin-gonic/gin"
     "strconv"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
 )
 
 func GetPage(ctx *gin.Context, defaultStart int32, defaultLength int32) (int32, int32, error) {

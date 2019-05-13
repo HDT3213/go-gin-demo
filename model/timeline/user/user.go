@@ -3,14 +3,15 @@ package user
 import (
     "github.com/go-gin-demo/entity"
     "fmt"
-    "github.com/go-gin-demo/model"
     PostModel "github.com/go-gin-demo/model/post"
     "time"
     RLock "github.com/bsm/redis-lock"
     "errors"
-    "github.com/go-gin-demo/utils/collections/set"
-    "github.com/go-gin-demo/utils/logger"
-    "github.com/go-redis/redis"
+    "github.com/go-gin-demo/lib/collections/set"
+    "github.com/go-gin-demo/lib/logger"
+    "github.com/go-gin-demo/context/context"
+    "github.com/go-gin-demo/lib/cache/redis"
+    GoRedis "github.com/go-redis/redis"
 )
 
 const (
@@ -25,7 +26,7 @@ func genKey(uid uint64) string {
 
 func cached(uid uint64) (bool, error) {
     key := genKey(uid)
-    exists, err := model.Redis.Exists(key).Result()
+    exists, err := context.Redis.Exists(key).Result()
     if err != nil {
         return false, err
     }
@@ -43,11 +44,11 @@ func Push(post *entity.Post) error {
     }
     timelineItem := entity.MakeTimelineItem(post)
     key := genKey(uid)
-    bytes, err := model.Marshal(timelineItem)
+    bytes, err := redis.Marshal(timelineItem)
     if err != nil {
         return err
     }
-    _, err = model.Redis.LPush(key, bytes).Result()
+    _, err = context.Redis.LPush(key, bytes).Result()
     return err
 }
 
@@ -62,17 +63,17 @@ func Remove(post *entity.Post) error {
     }
     timelineItem := entity.MakeTimelineItem(post)
     key := genKey(uid)
-    bytes, err := model.Marshal(timelineItem)
+    bytes, err := redis.Marshal(timelineItem)
     if err != nil {
         return err
     }
-    _, err = model.Redis.LRem(key, -1, bytes).Result()
+    _, err = context.Redis.LRem(key, -1, bytes).Result()
     return err
 }
 
 func getFromDB(uid uint64, start int32, length int32) ([]*entity.TimelineItem, error) {
     posts := make([]*entity.Post, length)
-    err := model.DB.Table("posts").
+    err := context.DB.Table("posts").
         Where("uid = ? AND valid = 1", uid).
         Order("created_at DESC").
         Limit(length).Offset(start).
@@ -89,12 +90,12 @@ func getFromDB(uid uint64, start int32, length int32) ([]*entity.TimelineItem, e
 
 func getFromCache(uid uint64, start int32, length int32) ([]*entity.TimelineItem, error) {
     key := genKey(uid)
-    vals, err := model.Redis.LRange(key, int64(start), int64(start + length -1)).Result()
+    vals, err := context.Redis.LRange(key, int64(start), int64(start + length -1)).Result()
     if err != nil {
         return nil, err
     }
     timeline := make([]*entity.TimelineItem, len(vals))
-    model.MultiUnmarshalStr(vals, &timeline)
+    redis.MultiUnmarshalStr(vals, &timeline)
     return timeline, nil
 }
 
@@ -107,7 +108,7 @@ func Rebuild(uid uint64, start int32, length int32) ([]*entity.TimelineItem, err
     key := genKey(uid)
 
     // lock
-    lock, err := RLock.Obtain(model.Redis, "lock:" + key, &RLock.Options{
+    lock, err := RLock.Obtain(context.Redis, "lock:" + key, &RLock.Options{
         RetryCount: 3,
     })
     if err != nil {
@@ -119,7 +120,7 @@ func Rebuild(uid uint64, start int32, length int32) ([]*entity.TimelineItem, err
     defer lock.Unlock()
 
     // check again
-    cachedSize, err := model.Redis.LLen(key).Result()
+    cachedSize, err := context.Redis.LLen(key).Result()
     if err != nil {
         return nil, err
     }
@@ -159,7 +160,7 @@ func rebuildInternal(uid uint64, limit int32) ([]*entity.TimelineItem, error) {
     // marshal
     vals := make([]interface{}, len(timeline))
     for i, item := range timeline {
-        val, err := model.Marshal(item)
+        val, err := redis.Marshal(item)
         if err != nil {
             return nil, err
         }
@@ -168,12 +169,12 @@ func rebuildInternal(uid uint64, limit int32) ([]*entity.TimelineItem, error) {
 
     key := genKey(uid)
 
-    _, err = model.Redis.Del(key).Result()
+    _, err = context.Redis.Del(key).Result()
     if err != nil {
         return nil, err
     }
 
-    _, err = model.Redis.RPush(key, vals...).Result()
+    _, err = context.Redis.RPush(key, vals...).Result()
     if err != nil {
         return nil, err
     }
@@ -182,7 +183,7 @@ func rebuildInternal(uid uint64, limit int32) ([]*entity.TimelineItem, error) {
 
 func Get(uid uint64, start int32, length int32) ([]*entity.TimelineItem, error) {
     key := genKey(uid)
-    cachedSize, err := model.Redis.LLen(key).Result()
+    cachedSize, err := context.Redis.LLen(key).Result()
     if err != nil {
         return nil, err
     }
@@ -215,8 +216,8 @@ func MultiGet(uids []uint64, limit int32) (map[uint64][]*entity.TimelineItem, er
         return make(map[uint64][]*entity.TimelineItem), nil
     }
 
-    cmdMap := make(map[uint64]*redis.StringSliceCmd)
-    pipe := model.Redis.Pipeline()
+    cmdMap := make(map[uint64]*GoRedis.StringSliceCmd)
+    pipe := context.Redis.Pipeline()
     for _, uid := range uids {
         key := genKey(uid)
         cmdMap[uid] = pipe.LRange(key, 0, int64(limit - 1))
@@ -235,7 +236,7 @@ func MultiGet(uids []uint64, limit int32) (map[uint64][]*entity.TimelineItem, er
             return nil, err
         }
         timeline := make([]*entity.TimelineItem, len(vals))
-        model.MultiUnmarshalStr(vals, &timeline)
+        redis.MultiUnmarshalStr(vals, &timeline)
         // if len(timeline) > 0 then len(timeline) >= defaultFetchLimit
         // ignore len(timeline) < limit
         if len(timeline) > 0 {

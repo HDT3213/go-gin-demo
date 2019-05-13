@@ -7,12 +7,14 @@ import (
 )
 
 func Setup(app *gin.Engine) {
-    root := app.Group("")
+
     app.GET("/mq", controller.MQEcho)
-
-    root.Use(auth.JWT())
-
     app.GET("/", controller.Index)
+    app.NoRoute(controller.NotFound)
+    app.NoMethod(controller.NotFound)
+
+    root := app.Group("")
+    root.Use(auth.JWT())
 
     root.POST("/register", controller.Register)
     root.POST("/login", controller.Login)

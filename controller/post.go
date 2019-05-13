@@ -4,9 +4,9 @@ import (
     "github.com/gin-gonic/gin"
     PostService "github.com/go-gin-demo/service/post"
     "github.com/go-gin-demo/middleware/auth"
-    "github.com/go-gin-demo/utils/response"
+    "github.com/go-gin-demo/lib/response"
     "strconv"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
 )
 
 func CreatePost(ctx *gin.Context) {

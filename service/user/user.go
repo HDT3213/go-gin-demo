@@ -7,9 +7,9 @@ import (
     PostModel "github.com/go-gin-demo/model/post"
     FollowModel "github.com/go-gin-demo/model/follow"
     FollowTimelineModel "github.com/go-gin-demo/model/timeline/follow"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
-    "github.com/go-gin-demo/utils/collections/set"
+    "github.com/go-gin-demo/lib/collections/set"
 )
 
 func RenderUsers(currentUid uint64, users []*entity.User) ([]*entity.UserEntity, error) {

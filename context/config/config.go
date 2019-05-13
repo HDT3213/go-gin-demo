@@ -1,19 +1,22 @@
+// static system config, depends on lib only
 package config
 
 import (
     "gopkg.in/yaml.v2"
     "io/ioutil"
-    "github.com/go-gin-demo/utils/logger"
-    "github.com/go-gin-demo/model"
-    MQCore "github.com/go-gin-demo/mq/core"
+    "github.com/go-gin-demo/lib/logger"
+    "github.com/go-gin-demo/lib/mq"
+    "github.com/go-gin-demo/lib/db"
+    "github.com/go-gin-demo/lib/cache/redis"
+    "github.com/go-gin-demo/lib/canal"
 )
 
 type Settings struct {
    Log logger.Settings
-   DB model.DBSettings
-   Redis model.RedisSettings
-   Rabbit MQCore.Settings
-   Canal model.CanalSettings
+   DB db.Settings
+   Redis redis.Settings
+   Rabbit mq.Settings
+   Canal canal.Settings
 }
 
 func Setup(path string) (*Settings) {

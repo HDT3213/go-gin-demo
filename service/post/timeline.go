@@ -5,7 +5,7 @@ import (
     UserTimelineModel "github.com/go-gin-demo/model/timeline/user"
     UserModel "github.com/go-gin-demo/model/user"
     PostModel "github.com/go-gin-demo/model/post"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
 )
 

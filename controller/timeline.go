@@ -3,11 +3,11 @@ package controller
 import (
     "github.com/gin-gonic/gin"
     "strconv"
-    "github.com/go-gin-demo/utils/response"
+    "github.com/go-gin-demo/lib/response"
     PostService "github.com/go-gin-demo/service/post"
-    "github.com/go-gin-demo/utils"
     "github.com/go-gin-demo/middleware/auth"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
+    "github.com/go-gin-demo/lib/request"
 )
 
 func GetUserTimeline(ctx *gin.Context) {
@@ -16,7 +16,7 @@ func GetUserTimeline(ctx *gin.Context) {
         response.BadRequest(ctx, "invalid uid: " + ctx.Param("uid"))
         return
     }
-    start, length, err := utils.GetPage(ctx,0 , 10)
+    start, length, err := request.GetPage(ctx,0 , 10)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -46,7 +46,7 @@ func GetSelfTimeline(ctx *gin.Context) {
         response.Error(ctx, err)
         return
     }
-    start, length, err := utils.GetPage(ctx, 0, 10)
+    start, length, err := request.GetPage(ctx, 0, 10)
     if err != nil {
         response.Error(ctx, err)
         return
@@ -65,7 +65,7 @@ func GetFollowingTimeline(ctx *gin.Context) {
         response.Error(ctx, err)
         return
     }
-    start, length, err := utils.GetPage(ctx, 0, 10)
+    start, length, err := request.GetPage(ctx, 0, 10)
     if err != nil {
         response.Error(ctx, err)
         return

@@ -3,13 +3,14 @@ package follow
 import (
     "fmt"
     "github.com/go-gin-demo/entity"
-    "github.com/go-gin-demo/model"
-    "github.com/go-gin-demo/model/counter"
-    "github.com/go-gin-demo/utils/collections/set"
+    "github.com/go-gin-demo/lib/collections/set"
     RLock "github.com/bsm/redis-lock"
     "errors"
-    "github.com/go-gin-demo/utils/collections"
+    "github.com/go-gin-demo/lib/collections"
     "strconv"
+    "github.com/go-gin-demo/context/context"
+    "github.com/go-gin-demo/lib/cache/redis/counter"
+    "github.com/go-gin-demo/lib/cache/redis"
 )
 
 const (
@@ -32,7 +33,7 @@ func cached(uid uint64) (bool, error) {
     }
 
     key := genKey(uid)
-    exists, err := model.Redis.Exists(key).Result()
+    exists, err := context.Redis.Exists(key).Result()
     if err != nil {
         return false, err
     }
@@ -49,14 +50,14 @@ func setCache(follow *entity.Follow) error {
         return nil  // lazy load
     }
     key := genKey(uid)
-    _, err = model.Redis.SAdd(key, follow.FollowingUid).Result()
+    _, err = context.Redis.SAdd(key, follow.FollowingUid).Result()
     return err
 }
 
 func Create(follow *entity.Follow) error {
     // check existed record
     existed := new(entity.Follow)
-    err := model.DB.Where("uid = ? AND following_uid = ?", follow.Uid, follow.FollowingUid).First(&existed).Error
+    err := context.DB.Where("uid = ? AND following_uid = ?", follow.Uid, follow.FollowingUid).First(&existed).Error
     if err != nil {
         if err.Error() == "record not found" {
             existed = nil
@@ -69,7 +70,7 @@ func Create(follow *entity.Follow) error {
             return nil // exists do nothing
         } else {
             // existed but deleted, recover
-            if err := model.DB.Model(&entity.Follow{}).
+            if err := context.DB.Model(&entity.Follow{}).
                 Where("uid = ? AND following_uid = ?", follow.Uid, follow.FollowingUid).
                 Update("valid", true).Error; err != nil {
                 return err
@@ -77,37 +78,37 @@ func Create(follow *entity.Follow) error {
         }
     } else {
         // new record
-        if err := model.DB.Create(follow).Error; err != nil {
+        if err := context.DB.Create(follow).Error; err != nil {
             return err
         }
     }
 
     setCache(follow)
-    counter.Increase(userFollowingCounterKeyPrefix, follow.Uid, 1)
-    counter.Increase(userFollowerCounterKeyPrefix, follow.FollowingUid, 1)
+    counter.Increase(context.Redis, userFollowingCounterKeyPrefix, follow.Uid, 1)
+    counter.Increase(context.Redis, userFollowerCounterKeyPrefix, follow.FollowingUid, 1)
     return nil
 }
 
 func removeCache(uid uint64, followingUid uint64) error {
     key := genKey(uid)
-    _, err := model.Redis.SRem(key, followingUid).Result()
+    _, err := context.Redis.SRem(key, followingUid).Result()
     return err
 }
 
 func Delete(uid uint64, followingUid uint64) error {
-    err := model.DB.Model(&entity.Follow{}).Where("uid = ? AND following_uid = ?", uid, followingUid).Update("valid", 0).Error
+    err := context.DB.Model(&entity.Follow{}).Where("uid = ? AND following_uid = ?", uid, followingUid).Update("valid", 0).Error
     if err != nil {
         return err
     }
     removeCache(uid, followingUid)
-    counter.Increase(userFollowingCounterKeyPrefix, uid, -1)
-    counter.Increase(userFollowerCounterKeyPrefix, followingUid, -1)
+    counter.Increase(context.Redis, userFollowingCounterKeyPrefix, uid, -1)
+    counter.Increase(context.Redis, userFollowerCounterKeyPrefix, followingUid, -1)
     return nil
 }
 
 func rebuildInternal(uid uint64) (*set.Uint64Set, error) {
     var follows []*entity.Follow
-    if err := model.DB.Where("uid = ? AND valid = 1", uid).Find(&follows).Error; err != nil {
+    if err := context.DB.Where("uid = ? AND valid = 1", uid).Find(&follows).Error; err != nil {
         return nil, err
     }
     followingSet := set.MakeUint64Set()
@@ -115,7 +116,7 @@ func rebuildInternal(uid uint64) (*set.Uint64Set, error) {
         followingSet.Add(follow.FollowingUid)
     }
     followingUids := followingSet.ToInterfaceArray()
-    _, err := model.Redis.SAdd(genKey(uid), followingUids...).Result()
+    _, err := context.Redis.SAdd(genKey(uid), followingUids...).Result()
     if err != nil {
         return nil, err
     }
@@ -126,7 +127,7 @@ func Rebuild(uid uint64) error {
     key := genKey(uid)
 
     // lock
-    lock, err := RLock.Obtain(model.Redis, "lock:" + key, &RLock.Options{
+    lock, err := RLock.Obtain(context.Redis, "lock:" + key, &RLock.Options{
         RetryCount: 3,
     })
     if err != nil {
@@ -163,7 +164,7 @@ func IsFollowing(uid uint64, followingUid uint64) (bool, error) {
         }
     }
     key := genKey(uid)
-    result, err := model.Redis.SIsMember(key, followingUid).Result()
+    result, err := context.Redis.SIsMember(key, followingUid).Result()
     if err != nil {
         return false, nil
     }
@@ -185,7 +186,7 @@ func GetFollowingIn(currentUid uint64, uids []uint64) ([]uint64, error) {
     }
 
     key := genKey(currentUid)
-    return model.Intersect(key, uids)
+    return redis.Intersect(context.Redis, key, uids)
 }
 
 func GetAllFollowings(uid uint64) ([]uint64, error) {
@@ -200,7 +201,7 @@ func GetAllFollowings(uid uint64) ([]uint64, error) {
         }
     }
     key := genKey(uid)
-    vals, err := model.Redis.SMembers(key).Result()
+    vals, err := context.Redis.SMembers(key).Result()
     if err != nil {
         return nil, err
     }
@@ -218,7 +219,7 @@ func GetAllFollowings(uid uint64) ([]uint64, error) {
 
 func getFollowingCountFromDB(uid uint64) (int32, error) {
     var count int32
-    err := model.DB.Model(&entity.Follow{}).Where("uid = ? AND valid = 1", uid).Count(&count).Error
+    err := context.DB.Model(&entity.Follow{}).Where("uid = ? AND valid = 1", uid).Count(&count).Error
     if err != nil {
         return -1, err
     }
@@ -226,12 +227,12 @@ func getFollowingCountFromDB(uid uint64) (int32, error) {
 }
 
 func GetFollowingCount(uid uint64) (int32, error) {
-    return counter.Get(userFollowingCounterKeyPrefix, uid, getFollowingCountFromDB)
+    return counter.Get(context.Redis, userFollowingCounterKeyPrefix, uid, getFollowingCountFromDB)
 }
 
 func multiGetFollowingCountFromDB(uids []uint64) (map[uint64]int32, error) {
     pairs := make([]*collections.IdCountPair, len(uids))
-    err := model.DB.Model(&entity.Follow{}).Select("uid AS id, count(*) AS num").Where("uid IN (?) AND valid = 1", uids).Group("uid").Scan(&pairs).Error
+    err := context.DB.Model(&entity.Follow{}).Select("uid AS id, count(*) AS num").Where("uid IN (?) AND valid = 1", uids).Group("uid").Scan(&pairs).Error
     if err != nil {
         return nil, err
     }
@@ -239,12 +240,12 @@ func multiGetFollowingCountFromDB(uids []uint64) (map[uint64]int32, error) {
 }
 
 func GetFollowingCountMap(uids []uint64) (map[uint64]int32, error) {
-    return counter.GetMap(userFollowingCounterKeyPrefix, uids, multiGetFollowingCountFromDB)
+    return counter.GetMap(context.Redis, userFollowingCounterKeyPrefix, uids, multiGetFollowingCountFromDB)
 }
 
 func getFollowerCountFromDB(uid uint64) (int32, error) {
     var count int32
-    err := model.DB.Model(&entity.Follow{}).Where("following_uid = ? AND valid = 1", uid).Count(&count).Error
+    err := context.DB.Model(&entity.Follow{}).Where("following_uid = ? AND valid = 1", uid).Count(&count).Error
     if err != nil {
         return -1, err
     }
@@ -252,12 +253,12 @@ func getFollowerCountFromDB(uid uint64) (int32, error) {
 }
 
 func GetFollowerCount(uid uint64) (int32, error) {
-    return counter.Get(userFollowerCounterKeyPrefix, uid, getFollowerCountFromDB)
+    return counter.Get(context.Redis, userFollowerCounterKeyPrefix, uid, getFollowerCountFromDB)
 }
 
 func multiGetFollowerCountFromDB(uids []uint64) (map[uint64]int32, error) {
     pairs := make([]*collections.IdCountPair, len(uids))
-    err := model.DB.Model(&entity.Follow{}).Select("following_uid AS id, count(*) AS num").Where("following_uid in (?) AND valid = 1", uids).Group("following_uid").Scan(&pairs).Error
+    err := context.DB.Model(&entity.Follow{}).Select("following_uid AS id, count(*) AS num").Where("following_uid in (?) AND valid = 1", uids).Group("following_uid").Scan(&pairs).Error
     if err != nil {
         return nil, err
     }
@@ -265,12 +266,12 @@ func multiGetFollowerCountFromDB(uids []uint64) (map[uint64]int32, error) {
 }
 
 func GetFollowerCountMap(uids []uint64) (map[uint64]int32, error) {
-    return counter.GetMap(userFollowerCounterKeyPrefix, uids, multiGetFollowerCountFromDB)
+    return counter.GetMap(context.Redis, userFollowerCounterKeyPrefix, uids, multiGetFollowerCountFromDB)
 }
 
 func GetFollowings(uid uint64, start int32, length int32) ([]*entity.Follow, error) {
     var follows []*entity.Follow
-    err := model.DB.
+    err := context.DB.
         Where("uid = ? AND valid = 1", uid).
         Order("created_at DESC").
         Limit(length).Offset(start).
@@ -283,7 +284,7 @@ func GetFollowings(uid uint64, start int32, length int32) ([]*entity.Follow, err
 
 func GetFollowers(uid uint64, start int32, length int32) ([]*entity.Follow, error) {
     var follows []*entity.Follow
-    err := model.DB.
+    err := context.DB.
         Where("following_uid = ? AND valid = 1", uid).
         Order("created_at DESC").
         Limit(length).Offset(start).

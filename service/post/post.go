@@ -2,11 +2,11 @@ package post
 
 import (
     "github.com/go-gin-demo/entity"
-    "github.com/go-gin-demo/utils/collections/set"
+    "github.com/go-gin-demo/lib/collections/set"
     UserService "github.com/go-gin-demo/service/user"
     "strconv"
     PostModel "github.com/go-gin-demo/model/post"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
     UserTimelineModel "github.com/go-gin-demo/model/timeline/user"
 )

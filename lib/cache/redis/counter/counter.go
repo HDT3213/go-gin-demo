@@ -2,10 +2,10 @@ package counter
 
 import (
     "fmt"
-    "github.com/go-gin-demo/model"
     "strconv"
     "time"
-    "github.com/go-gin-demo/utils/collections/set"
+    "github.com/go-gin-demo/lib/collections/set"
+    "github.com/go-redis/redis"
 )
 
 const TTL = 1 * time.Hour
@@ -14,16 +14,16 @@ func genKey(keyPrefix string, id uint64) string {
     return fmt.Sprintf("%s:%d", keyPrefix, id)
 }
 
-func Get(keyPrefix string, id uint64, getter func (uint64)(int32, error)) (int32, error) {
+func Get(red *redis.Client, keyPrefix string, id uint64, getter func (uint64)(int32, error)) (int32, error) {
     key := genKey(keyPrefix, id)
-    result, err := model.Redis.Get(key).Result()
+    result, err := red.Get(key).Result()
     if err != nil {
         if err.Error() == "redis: nil" {
             count, err := getter(id) // trust getter
             if err != nil {
                 return -1, err
             }
-            Set(keyPrefix, id, count)
+            Set(red, keyPrefix, id, count)
             return count, nil
         } else {
             return -1, err
@@ -38,33 +38,33 @@ func Get(keyPrefix string, id uint64, getter func (uint64)(int32, error)) (int32
         if err != nil {
             return -1, err
         }
-        Del(keyPrefix, id) // must not set cache, other thread may about to increase count
+        Del(red, keyPrefix, id) // must not set cache, other thread may about to increase count
         return count, nil
     }
     return int32(count), nil
 }
 
-func Set(keyPrefix string, id uint64, count int32) error {
+func Set(red *redis.Client, keyPrefix string, id uint64, count int32) error {
     key := genKey(keyPrefix, id)
-    _, err := model.Redis.Set(key, count, TTL).Result()
+    _, err := red.Set(key, count, TTL).Result()
     return err
 
 }
 
-func Del(keyPrefix string, id uint64) error {
+func Del(red *redis.Client, keyPrefix string, id uint64) error {
     key := genKey(keyPrefix, id)
-    _, err := model.Redis.Del(key).Result()
+    _, err := red.Del(key).Result()
     return err
 }
 
-func Increase(keyPrefix string, id uint64, delta int32) error {
+func Increase(red *redis.Client, keyPrefix string, id uint64, delta int32) error {
     key := genKey(keyPrefix, id)
-    exists, err := model.Redis.Exists(key).Result()
+    exists, err := red.Exists(key).Result()
     if err != nil {
         return err
     }
     if exists > 0 {
-        _, err := model.Redis.IncrBy(key, int64(delta)).Result()
+        _, err := red.IncrBy(key, int64(delta)).Result()
         if err != nil {
             return err
         }
@@ -72,13 +72,13 @@ func Increase(keyPrefix string, id uint64, delta int32) error {
     return nil
 }
 
-func GetMap(keyPrefix string, ids []uint64, getter func ([]uint64)(map[uint64]int32, error)) (map[uint64]int32, error){
+func GetMap(red *redis.Client, keyPrefix string, ids []uint64, getter func ([]uint64)(map[uint64]int32, error)) (map[uint64]int32, error){
     size := len(ids)
     keys := make([]string, size)
     for i, id := range ids {
         keys[i] = genKey(keyPrefix, id)
     }
-    vals, err := model.Redis.MGet(keys...).Result()
+    vals, err := red.MGet(keys...).Result()
     if err != nil {
         return nil, err
     }
@@ -104,7 +104,7 @@ func GetMap(keyPrefix string, ids []uint64, getter func ([]uint64)(map[uint64]in
         if err != nil {
             return countMap, err
         }
-        SetMap(keyPrefix, fillMap)
+        SetMap(red, keyPrefix, fillMap)
         for id, count := range fillMap {
             countMap[id] = count
         }
@@ -112,7 +112,7 @@ func GetMap(keyPrefix string, ids []uint64, getter func ([]uint64)(map[uint64]in
     return countMap, nil
 }
 
-func SetMap(keyPrefix string, countMap map[uint64]int32) error {
+func SetMap(red *redis.Client, keyPrefix string, countMap map[uint64]int32) error {
     size := len(countMap)
     pairs := make([]interface{}, size * 2)
     i := 0
@@ -121,6 +121,6 @@ func SetMap(keyPrefix string, countMap map[uint64]int32) error {
         pairs[i+1] = count
         i += 2
     }
-    _, err := model.Redis.MSet(pairs...).Result()
+    _, err := red.MSet(pairs...).Result()
     return err
 }

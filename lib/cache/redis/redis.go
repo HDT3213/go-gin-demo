@@ -1,16 +1,14 @@
-package model
+package redis
 
 import (
     "github.com/go-redis/redis"
     "time"
     "github.com/vmihailenco/msgpack"
     "reflect"
-    "github.com/go-gin-demo/utils/logger"
+    "github.com/go-gin-demo/lib/logger"
 )
 
-var Redis *redis.Client
-
-type RedisSettings struct {
+type Settings struct {
     Host string `yaml:"host"`
     Password string `yaml:"password"`
     DB int `yaml:"db"`
@@ -18,8 +16,8 @@ type RedisSettings struct {
     PoolTimeout time.Duration `yaml:"pool-timeout"`
 }
 
-func setupRedis(settings *RedisSettings) {
-    Redis = redis.NewClient(&redis.Options{
+func Setup(settings *Settings) (*redis.Client, error) {
+    redis := redis.NewClient(&redis.Options{
         Addr:     settings.Host,
         Password: settings.Password,
         DB:       settings.DB,
@@ -27,16 +25,11 @@ func setupRedis(settings *RedisSettings) {
         PoolTimeout:  settings.PoolTimeout,
     })
 
-    _, err := Redis.Ping().Result()
+    _, err := redis.Ping().Result()
     if err != nil {
-        panic(err)
+        return nil, err
     }
-}
-
-func closeCache() {
-    if Redis != nil {
-        Redis.Close()
-    }
+    return redis, nil
 }
 
 

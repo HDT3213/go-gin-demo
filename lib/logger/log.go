@@ -7,7 +7,7 @@ import (
     "path/filepath"
     "runtime"
     "time"
-    "github.com/go-gin-demo/utils/files"
+    "github.com/go-gin-demo/lib/files"
     "io"
 )
 

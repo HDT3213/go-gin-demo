@@ -1,13 +1,15 @@
 package user
 
 import (
-    "github.com/go-gin-demo/utils"
     "github.com/go-gin-demo/entity"
-    "github.com/go-gin-demo/model"
     "strconv"
     "math/rand"
     "fmt"
-    BizError "github.com/go-gin-demo/errors"
+    BizError "github.com/go-gin-demo/lib/errors"
+    "github.com/go-gin-demo/lib/hash"
+    "github.com/go-gin-demo/lib/time"
+    "github.com/go-gin-demo/lib/cache/redis"
+    "github.com/go-gin-demo/context/context"
 )
 
 func genCacheKey(uid uint64) string {
@@ -16,20 +18,20 @@ func genCacheKey(uid uint64) string {
 
 func setCache(user *entity.User) error {
     key := genCacheKey(user.ID)
-    val, err := model.Marshal(user)
+    val, err := redis.Marshal(user)
     if err != nil {
         return err
     }
-    _, err = model.Redis.Set(key, val, 0).Result()
+    _, err = context.Redis.Set(key, val, 0).Result()
     return err
 }
 
 func Create(user *entity.User) error {
-    user.ID = uint64(utils.Hash32(user.Username + strconv.Itoa(int(utils.Now())) + strconv.Itoa(rand.Int())))
-    if model.DB.NewRecord(*user) {
+    user.ID = uint64(hash.Hash32(user.Username + strconv.Itoa(int(time.Now())) + strconv.Itoa(rand.Int())))
+    if context.DB.NewRecord(*user) {
         return BizError.InvalidForm("user exists")
     }
-    if err := model.DB.Create(user).Error; err != nil {
+    if err := context.DB.Create(user).Error; err != nil {
         return err
     }
     setCache(user)
@@ -38,7 +40,7 @@ func Create(user *entity.User) error {
 
 func getFromCache(uid uint64) (*entity.User, error) {
     key := genCacheKey(uid)
-    val, err := model.Redis.Get(key).Result()
+    val, err := context.Redis.Get(key).Result()
     if err != nil {
         if err.Error() == "redis: nil" {
             return nil, nil
@@ -47,7 +49,7 @@ func getFromCache(uid uint64) (*entity.User, error) {
         }
     }
     user := new(entity.User)
-    err = model.Unmarshal([]byte(val), user)
+    err = redis.Unmarshal([]byte(val), user)
     if err != nil {
         return nil, err
     }
@@ -56,7 +58,7 @@ func getFromCache(uid uint64) (*entity.User, error) {
 
 func getFromDB(uid uint64) (*entity.User, error) {
     user := new(entity.User)
-    err := model.DB.Where("valid = 1").First(&user, uid).Error
+    err := context.DB.Where("valid = 1").First(&user, uid).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
     }
@@ -94,13 +96,13 @@ func MultiGet(uids []uint64) ([]*entity.User, error) {
         keys[i] = genCacheKey(uid)
     }
 
-    vals, err := model.Redis.MGet(keys...).Result()
+    vals, err := context.Redis.MGet(keys...).Result()
     if err != nil {
         return nil, err
     }
 
     users := make([]*entity.User, len(vals))
-    model.MultiUnmarshal(vals, &users)
+    redis.MultiUnmarshal(vals, &users)
 
     for i, uid := range uids {
         if users[i] == nil {
@@ -133,7 +135,7 @@ func GetMap(uids []uint64) (map[uint64]*entity.User, error) {
 
 func GetByName(username string) (*entity.User, error) {
     var user entity.User
-    err := model.DB.Where("username = ? AND valid = 1", username).First(&user).Error
+    err := context.DB.Where("username = ? AND valid = 1", username).First(&user).Error
     if err != nil && err.Error() == "record not found" {
         return nil, nil
     }

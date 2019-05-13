@@ -1,10 +1,10 @@
 package consumer
 
 import (
-    "github.com/go-gin-demo/mq/core"
-    "github.com/go-gin-demo/utils/logger"
+    "github.com/go-gin-demo/lib/logger"
+    "github.com/go-gin-demo/lib/mq"
 )
 
-func Echo(msg *core.Msg) {
+func Echo(msg *mq.Msg) {
     logger.Info("receive: " + string(msg.Payload))
 }

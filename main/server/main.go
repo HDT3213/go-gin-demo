@@ -7,7 +7,6 @@ import (
     "github.com/go-gin-demo/context/context"
     "github.com/go-gin-demo/model"
     "os"
-    "github.com/gin-gonic/gin"
     "github.com/fvbock/endless"
     MQ "github.com/go-gin-demo/lib/mq"
     DB "github.com/go-gin-demo/lib/db"
@@ -56,9 +55,7 @@ func main() {
     if port == "" {
         port = "8080"
     }
-    app := gin.Default()
-    router.Setup(app)
-
+    app := router.Setup()
 
     // run
     logger.Info("start server")

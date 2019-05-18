@@ -4,14 +4,20 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/go-gin-demo/middleware/auth"
     "github.com/go-gin-demo/controller"
+    "github.com/go-gin-demo/middleware/recovery"
 )
 
-func Setup(app *gin.Engine) {
+func Setup() (*gin.Engine) {
+    app := gin.New()
+    app.Use(gin.Logger())
+    app.Use(recovery.Recovery())
 
-    app.GET("/mq", controller.MQEcho)
     app.GET("/", controller.Index)
+    app.GET("/panic", controller.Panic)
     app.NoRoute(controller.NotFound)
     app.NoMethod(controller.NotFound)
+
+    app.GET("/mq", controller.MQEcho)
 
     root := app.Group("")
     root.Use(auth.JWT())
@@ -34,4 +40,5 @@ func Setup(app *gin.Engine) {
     root.GET("/follower/user/:id", controller.GetUserFollowers)
     root.GET("/following/self", controller.GetSelfFollowings)
     root.GET("/follower/self", controller.GetSelfFollowers)
+    return app
 }

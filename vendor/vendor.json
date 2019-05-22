@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "Pc2ORQp+VY3Un/dkh4QwLC7R6lE=",
+			"path": "github.com/BurntSushi/toml",
+			"revision": "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005",
+			"revisionTime": "2018-08-15T10:47:33Z"
+		},
+		{
 			"checksumSHA1": "/fQeC9dsgVbH0Slg5B6r1Yviaho=",
 			"path": "github.com/bsm/redis-lock",
 			"revision": "a411a6dd9badb340368e4e97ad9de11ea0e63811",
@@ -129,10 +135,94 @@
 			"revisionTime": "2018-08-30T10:17:45Z"
 		},
 		{
+			"checksumSHA1": "E7NXl1syUEoDUv6fu4cNbiACPYA=",
+			"path": "github.com/pingcap/errors",
+			"revision": "8abfc136a5aa7f8e997266a3d04a51adeeb07e97",
+			"revisionTime": "2019-03-18T09:29:31Z"
+		},
+		{
 			"checksumSHA1": "0H/VjT8w1CB702qWpbYMqr65Mf0=",
 			"path": "github.com/pkg/errors",
 			"revision": "ffb6e22f01932bf7ac35e0bad9be11f01d1c8685",
 			"revisionTime": "2019-01-09T06:16:28Z"
+		},
+		{
+			"checksumSHA1": "Tutue3nEgM/87jitUcYv6ODwyNE=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "b2ce2384e17bbe0c6d34077efa39dbab3e09123b",
+			"revisionTime": "2018-10-28T12:50:25Z"
+		},
+		{
+			"checksumSHA1": "dhcoAs6YFyvXiG55mx5WDxg+/4g=",
+			"path": "github.com/shopspring/decimal",
+			"revision": "cd690d0c9e2447b1ef2a129a6b7b49077da89b8e",
+			"revisionTime": "2018-07-09T20:31:17Z"
+		},
+		{
+			"checksumSHA1": "0RU+/XH0aPU3jqh0BvHSG8jflAs=",
+			"path": "github.com/siddontang/go-log/log",
+			"revision": "1e957dd83bed18c84716181da7b80d4af48eaefe",
+			"revisionTime": "2019-02-21T02:24:29Z"
+		},
+		{
+			"checksumSHA1": "9lEuqb2hNUEsdhjmOOcXykFbZBc=",
+			"path": "github.com/siddontang/go-log/loggers",
+			"revision": "1e957dd83bed18c84716181da7b80d4af48eaefe",
+			"revisionTime": "2019-02-21T02:24:29Z"
+		},
+		{
+			"checksumSHA1": "8pb2aujFmV9ymT/cwjE/t2sCtyM=",
+			"path": "github.com/siddontang/go-mysql/canal",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "1NkOQgerOg6bWkrcZaq1fkoamTc=",
+			"path": "github.com/siddontang/go-mysql/client",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "B/M3UeGGLmvvgI2y5Igt2UjsXXQ=",
+			"path": "github.com/siddontang/go-mysql/dump",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "3CDUJ8XXVLkgXnFMnqWRj1BHxOs=",
+			"path": "github.com/siddontang/go-mysql/mysql",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "P41yRchZqmocLDkiIk4Zbafp8i8=",
+			"path": "github.com/siddontang/go-mysql/packet",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "a91kMBMyzHHxTa9eE2vB0wzSNoQ=",
+			"path": "github.com/siddontang/go-mysql/replication",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "lEa2WzlOsF5BiRMxd/XRz8+1ifk=",
+			"path": "github.com/siddontang/go-mysql/schema",
+			"revision": "c6ab05a85eb86dc51a27ceed6d2f366a32874a24",
+			"revisionTime": "2019-03-12T05:21:22Z"
+		},
+		{
+			"checksumSHA1": "hou29E6PZ7dEDFgXgM9P15cgHr4=",
+			"path": "github.com/siddontang/go/hack",
+			"revision": "bdc77568d726a8702315ec4eafda030b6abc4f43",
+			"revisionTime": "2018-06-04T09:05:27Z"
+		},
+		{
+			"checksumSHA1": "M9Vpq0g1nLqfEjll3PNZ/yz8gZY=",
+			"path": "github.com/streadway/amqp",
+			"revision": "75d898a42a940fbc854dfd1a4199eabdc00cf024",
+			"revisionTime": "2019-04-04T07:53:20Z"
 		},
 		{
 			"checksumSHA1": "V6tam1VByPtuNvn/IW8tnbGRQ3A=",

@@ -9,6 +9,9 @@ import (
     BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
     UserTimelineModel "github.com/go-gin-demo/model/timeline/user"
+    "github.com/go-gin-demo/lib/canal"
+    "github.com/mitchellh/mapstructure"
+    "github.com/go-gin-demo/context/context"
 )
 
 func RenderPosts(currentUid uint64, posts []*entity.Post) ([]*entity.PostEntity, error) {
@@ -68,8 +71,27 @@ func CreatePost(uid uint64, text string) (*entity.PostEntity, error) {
     if err != nil {
         return nil, err
     }
-    UserTimelineModel.Push(post)
+    if !context.EnableCanal() {
+        UserTimelineModel.Push(post)
+    }
     return RenderPost(uid, post)
+}
+
+// canal handler
+func AfterCreatePost(former canal.Row, row canal.Row) error {
+    var post entity.Post
+    err := mapstructure.Decode(row, &post)
+    if err != nil {
+        return err
+    }
+    if !post.Valid {
+        return nil
+    }
+    err = PostModel.AfterCreate(&post)
+    if err != nil {
+        return err
+    }
+    return UserTimelineModel.Push(&post)
 }
 
 func GetPost(currentUid uint64, pid uint64) (*entity.PostEntity, error) {
@@ -98,6 +120,25 @@ func DeletePost(currentUid uint64, pid uint64) error {
     if err != nil {
         return err
     }
-    err = UserTimelineModel.Remove(post)
+    if !context.EnableCanal() {
+        err = UserTimelineModel.Remove(post)
+    }
     return err
+}
+
+func AfterUpdatePost(former canal.Row, row canal.Row) error {
+    var post entity.Post
+    err := mapstructure.Decode(row, &post)
+    if err != nil {
+        return err
+    }
+    if !post.Valid {
+        err = PostModel.AfterDelete(&post)
+        if err != nil {
+            return err
+        }
+        err = UserTimelineModel.Remove(&post)
+        return err
+    }
+    return nil
 }

@@ -38,9 +38,18 @@ func Create(post *entity.Post) error {
     if err := context.DB.Create(post).Error; err != nil {
         return err
     }
-    setCache(post)
-    counter.Increase(context.Redis, userPostCounterKeyPrefix, post.Uid, 1)
+    if !context.EnableCanal() {
+       return AfterCreate(post)
+    }
     return nil
+}
+
+func AfterCreate(post *entity.Post) error {
+    err := setCache(post)
+    if err != nil {
+        return err
+    }
+    return counter.Increase(context.Redis, userPostCounterKeyPrefix, post.Uid, 1)
 }
 
 func getFromCache(pid uint64) (*entity.Post, error) { // may get a post which valid=false
@@ -145,9 +154,18 @@ func Delete(post *entity.Post) error {
     if err := context.DB.Model(&entity.Post{}).Where("id = ? AND valid = 1", pid).Update("valid", 0).Error; err != nil {
         return err
     }
-    err := setCache(&entity.Post{ID:pid, Valid:false})
-    counter.Increase(context.Redis, userPostCounterKeyPrefix, post.Uid, -1)
-    return err
+    if !context.EnableCanal() {
+        return AfterDelete(post)
+    }
+    return nil
+}
+
+func AfterDelete(post *entity.Post) error {
+    err := setCache(&entity.Post{ID:post.ID, Valid:false})
+    if err != nil {
+        return err
+    }
+    return counter.Increase(context.Redis, userPostCounterKeyPrefix, post.Uid, -1)
 }
 
 func getUserPostCountFromDB(uid uint64) (int32, error) {

@@ -10,6 +10,9 @@ import (
     BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
     "github.com/go-gin-demo/lib/collections/set"
+    "github.com/go-gin-demo/lib/canal"
+    "github.com/mitchellh/mapstructure"
+    "github.com/go-gin-demo/context/context"
 )
 
 func RenderUsers(currentUid uint64, users []*entity.User) ([]*entity.UserEntity, error) {
@@ -113,6 +116,23 @@ func Register(username string, password string) (*entity.UserEntity, error) {
     return RenderUser(user.ID, user)
 }
 
+func AfterCreateUser(former canal.Row, row canal.Row) error {
+    var user entity.User
+    err := mapstructure.Decode(row, &user)
+    if err != nil {
+        return err
+    }
+    if !user.Valid {
+        return nil
+    }
+    return UserModel.AfterCreate(&user)
+}
+
+func AfterUpdateUser(former canal.Row, row canal.Row) error {
+    return nil
+}
+
+
 func Login(username string, password string) (*entity.UserEntity, uint64, error) {
     user, err := UserModel.GetByName(username)
     if err != nil {
@@ -171,8 +191,29 @@ func Follow(currentUid uint64, followingUid uint64) error {
     if err != nil {
         return err
     }
-    FollowTimelineModel.Del(currentUid)
+    if !context.EnableCanal() {
+        FollowTimelineModel.Del(currentUid)
+    }
     return nil
+}
+
+func AfterCreateFollow(former canal.Row, row canal.Row) error {
+    var follow entity.Follow
+    err := mapstructure.Decode(row, &follow)
+    if err != nil {
+        return err
+    }
+    if !follow.Valid {
+        return nil
+    }
+
+    err = FollowModel.AfterCreate(&follow)
+    if err != nil {
+        return err
+    }
+
+    err = FollowTimelineModel.Del(follow.Uid)
+    return err
 }
 
 func UnFollow(currentUid uint64, followingUid uint64) error {
@@ -202,7 +243,27 @@ func UnFollow(currentUid uint64, followingUid uint64) error {
     if err != nil {
         return err
     }
-    FollowTimelineModel.Del(currentUid)
+    if !context.EnableCanal() {
+        FollowTimelineModel.Del(currentUid)
+    }
+    return nil
+}
+
+func AfterUpdateFollow(former canal.Row, row canal.Row) error {
+    var follow entity.Follow
+    err := mapstructure.Decode(row, &follow)
+    if err != nil {
+        return err
+    }
+    if !follow.Valid {
+        err = FollowModel.AfterDelete(&follow)
+        if err != nil {
+            return err
+        }
+
+        err = FollowTimelineModel.Del(follow.Uid)
+        return err
+    }
     return nil
 }
 

@@ -34,8 +34,14 @@ func Create(user *entity.User) error {
     if err := context.DB.Create(user).Error; err != nil {
         return err
     }
-    setCache(user)
+    if !context.EnableCanal() {
+        AfterCreate(user)
+    }
     return nil
+}
+
+func AfterCreate(user *entity.User) error {
+    return setCache(user)
 }
 
 func getFromCache(uid uint64) (*entity.User, error) {

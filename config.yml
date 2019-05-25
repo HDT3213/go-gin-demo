@@ -1,3 +1,6 @@
+runtime:
+  canal-enable: true
+
 log:
   path: logs
   name: api
@@ -23,11 +26,11 @@ redis:
 rabbit:
   username: go
   password: password
-  url: localhost:5672
+  host: localhost:5672
   vhost: go
   exchange: go
   queue: general
-  routingKey: general
+  routing-key: general
 
 canal:
   addr: 127.0.0.1:3306
@@ -35,3 +38,7 @@ canal:
   password: password
   db: go
   tables: [follows, posts, users]
+  zookeeper:
+    hosts: [localhost:2181]
+    session-timeout: 2000000s
+  path: /go/canal/pos  # please ensure parent path exists

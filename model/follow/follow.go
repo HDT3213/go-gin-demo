@@ -83,9 +83,28 @@ func Create(follow *entity.Follow) error {
         }
     }
 
-    setCache(follow)
-    counter.Increase(context.Redis, userFollowingCounterKeyPrefix, follow.Uid, 1)
-    counter.Increase(context.Redis, userFollowerCounterKeyPrefix, follow.FollowingUid, 1)
+    if !context.EnableCanal() {
+        AfterCreate(follow)
+    }
+
+    return nil
+}
+
+func AfterCreate(follow *entity.Follow) error {
+    err := setCache(follow)
+    if err != nil {
+        return err
+    }
+
+    err = counter.Increase(context.Redis, userFollowingCounterKeyPrefix, follow.Uid, 1)
+    if err != nil {
+        return err
+    }
+
+    err = counter.Increase(context.Redis, userFollowerCounterKeyPrefix, follow.FollowingUid, 1)
+    if err != nil {
+        return err
+    }
     return nil
 }
 
@@ -100,9 +119,37 @@ func Delete(uid uint64, followingUid uint64) error {
     if err != nil {
         return err
     }
-    removeCache(uid, followingUid)
-    counter.Increase(context.Redis, userFollowingCounterKeyPrefix, uid, -1)
-    counter.Increase(context.Redis, userFollowerCounterKeyPrefix, followingUid, -1)
+
+    if !context.EnableCanal() {
+        AfterDelete(&entity.Follow{
+            Uid: uid,
+            FollowingUid: followingUid,
+            Valid: false,
+        })
+    }
+
+    return nil
+}
+
+func AfterDelete(follow *entity.Follow) error {
+    uid := follow.Uid
+    followingUid := follow.FollowingUid
+
+    err := removeCache(uid, followingUid)
+    if err != nil {
+        return err
+    }
+
+    err = counter.Increase(context.Redis, userFollowingCounterKeyPrefix, uid, -1)
+    if err != nil {
+        return err
+    }
+
+    err = counter.Increase(context.Redis, userFollowerCounterKeyPrefix, followingUid, -1)
+    if err != nil {
+        return err
+    }
+
     return nil
 }
 

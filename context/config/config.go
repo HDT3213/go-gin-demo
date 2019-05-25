@@ -9,9 +9,11 @@ import (
     "github.com/go-gin-demo/lib/db"
     "github.com/go-gin-demo/lib/cache/redis"
     "github.com/go-gin-demo/lib/canal"
+    "github.com/go-gin-demo/context/context"
 )
 
 type Settings struct {
+   Runtime context.RuntimeSettings
    Log logger.Settings
    DB db.Settings
    Redis redis.Settings

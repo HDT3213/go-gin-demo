@@ -1,5 +1,6 @@
 runtime:
   canal-enable: true
+  mq-fallback: true
 
 log:
   path: logs

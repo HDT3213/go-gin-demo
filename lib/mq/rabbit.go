@@ -111,7 +111,7 @@ func (mq *RabbitMQ)Publish(msg *Msg) error {
     return err
 }
 
-func (mq *RabbitMQ)Consume(consumerMap map[uint32]func(*Msg)) error {
+func (mq *RabbitMQ)Consume(consumerMap map[uint32]ConsumerFunc) error {
     ch, err := mq.Conn.Channel()
     if err != nil {
         return err

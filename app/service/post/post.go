@@ -1,17 +1,17 @@
 package post
 
 import (
-    "github.com/go-gin-demo/app/entity"
-    "github.com/go-gin-demo/lib/collections/set"
-    UserService "github.com/go-gin-demo/app/service/user"
-    "strconv"
-    PostModel "github.com/go-gin-demo/app/model/post"
-    BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
-    UserTimelineModel "github.com/go-gin-demo/app/model/timeline/user"
-    "github.com/go-gin-demo/lib/canal"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    PostModel "github.com/HDT3213/go-gin-demo/app/model/post"
+    UserTimelineModel "github.com/HDT3213/go-gin-demo/app/model/timeline/user"
+    UserService "github.com/HDT3213/go-gin-demo/app/service/user"
+    "github.com/HDT3213/go-gin-demo/lib/canal"
+    "github.com/HDT3213/go-gin-demo/lib/collections/set"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
     "github.com/mitchellh/mapstructure"
-    "github.com/go-gin-demo/app/context/context"
+    "strconv"
 )
 
 func RenderPosts(currentUid uint64, posts []*entity.Post) ([]*entity.PostEntity, error) {
@@ -37,18 +37,19 @@ func RenderPosts(currentUid uint64, posts []*entity.Post) ([]*entity.PostEntity,
        }
    }
 
-   entities := make([]*entity.PostEntity, len(posts))
-   for i, post := range posts {
+   entities := make([]*entity.PostEntity, 0)
+   for _, post := range posts {
        user, ok := userMap[post.Uid]
        if !ok {
            continue
        }
-       entities[i] = &entity.PostEntity{
+       item := &entity.PostEntity{
            Id:strconv.FormatUint(post.ID, 10),
            CreatedAt:post.CreatedAt,
            User:user,
            Text:post.Text,
        }
+       entities = append(entities, item)
    }
    return entities, nil
 }

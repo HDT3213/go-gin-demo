@@ -2,14 +2,14 @@
 package config
 
 import (
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis"
+    "github.com/HDT3213/go-gin-demo/lib/canal"
+    "github.com/HDT3213/go-gin-demo/lib/db"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    "github.com/HDT3213/go-gin-demo/lib/mq"
     "gopkg.in/yaml.v2"
     "io/ioutil"
-    "github.com/go-gin-demo/lib/logger"
-    "github.com/go-gin-demo/lib/mq"
-    "github.com/go-gin-demo/lib/db"
-    "github.com/go-gin-demo/lib/cache/redis"
-    "github.com/go-gin-demo/lib/canal"
-    "github.com/go-gin-demo/app/context/context"
 )
 
 type Settings struct {

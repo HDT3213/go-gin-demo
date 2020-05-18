@@ -1,9 +1,9 @@
 package model
 
 import (
+    "github.com/HDT3213/go-gin-demo/app/entity"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/mysql"
-    "github.com/go-gin-demo/app/entity"
 )
 
 func Migrate(db *gorm.DB) error {

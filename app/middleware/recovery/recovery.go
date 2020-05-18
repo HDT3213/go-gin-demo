@@ -1,11 +1,11 @@
 package recovery
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/lib/logger"
-    "runtime/debug"
     "fmt"
-    "github.com/go-gin-demo/lib/response"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    "github.com/HDT3213/go-gin-demo/lib/response"
+    "github.com/gin-gonic/gin"
+    "runtime/debug"
 )
 
 func Recovery() gin.HandlerFunc {

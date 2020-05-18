@@ -2,16 +2,16 @@ package post
 
 import (
     "fmt"
-    "github.com/go-gin-demo/app/entity"
-    "strconv"
-    "github.com/go-gin-demo/lib/hash"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis/counter"
+    "github.com/HDT3213/go-gin-demo/lib/collections"
+    "github.com/HDT3213/go-gin-demo/lib/errors"
+    "github.com/HDT3213/go-gin-demo/lib/hash"
+    "github.com/HDT3213/go-gin-demo/lib/time"
     "math/rand"
-    "github.com/go-gin-demo/lib/errors"
-    "github.com/go-gin-demo/lib/collections"
-    "github.com/go-gin-demo/lib/time"
-    "github.com/go-gin-demo/lib/cache/redis"
-    "github.com/go-gin-demo/lib/cache/redis/counter"
-    "github.com/go-gin-demo/app/context/context"
+    "strconv"
 )
 
 const userPostCounterKeyPrefix = "Count:User:P"

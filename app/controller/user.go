@@ -1,13 +1,13 @@
 package controller
 
 import (
+    "github.com/HDT3213/go-gin-demo/app/middleware/auth"
+    UserService "github.com/HDT3213/go-gin-demo/app/service/user"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
+    "github.com/HDT3213/go-gin-demo/lib/request"
+    "github.com/HDT3213/go-gin-demo/lib/response"
     "github.com/gin-gonic/gin"
     "strconv"
-    "github.com/go-gin-demo/app/middleware/auth"
-    "github.com/go-gin-demo/lib/response"
-    UserService "github.com/go-gin-demo/app/service/user"
-    BizError "github.com/go-gin-demo/lib/errors"
-    "github.com/go-gin-demo/lib/request"
 )
 
 func GetUser(ctx *gin.Context)  {

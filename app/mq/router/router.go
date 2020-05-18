@@ -1,8 +1,8 @@
 package router
 
 import (
-    "github.com/go-gin-demo/app/mq/consumer"
-    "github.com/go-gin-demo/lib/mq"
+    "github.com/HDT3213/go-gin-demo/app/mq/consumer"
+    "github.com/HDT3213/go-gin-demo/lib/mq"
 )
 
 const (

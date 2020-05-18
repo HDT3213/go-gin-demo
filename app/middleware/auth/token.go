@@ -1,9 +1,9 @@
 package auth
 
 import (
-    "time"
     "github.com/dgrijalva/jwt-go"
     "github.com/pkg/errors"
+    "time"
 )
 
 

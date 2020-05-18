@@ -1,10 +1,10 @@
 package router
 
 import (
+    "github.com/HDT3213/go-gin-demo/app/controller"
+    "github.com/HDT3213/go-gin-demo/app/middleware/auth"
+    "github.com/HDT3213/go-gin-demo/app/middleware/recovery"
     "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/app/middleware/auth"
-    "github.com/go-gin-demo/app/controller"
-    "github.com/go-gin-demo/app/middleware/recovery"
 )
 
 func Setup() (*gin.Engine) {

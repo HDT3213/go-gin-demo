@@ -1,11 +1,11 @@
 package redis
 
 import (
+    "github.com/HDT3213/go-gin-demo/lib/logger"
     "github.com/go-redis/redis"
-    "time"
     "github.com/vmihailenco/msgpack"
     "reflect"
-    "github.com/go-gin-demo/lib/logger"
+    "time"
 )
 
 type Settings struct {

@@ -1,18 +1,18 @@
 package main
 
 import (
-    "github.com/go-gin-demo/lib/logger"
-    "os"
-    "github.com/go-gin-demo/app/context/config"
-    MQ "github.com/go-gin-demo/lib/mq"
-    MQRouter "github.com/go-gin-demo/app/mq/router"
     "fmt"
-    "github.com/go-gin-demo/app/context/context"
-    DB "github.com/go-gin-demo/lib/db"
-    "github.com/go-gin-demo/app/model"
-    Redis "github.com/go-gin-demo/lib/cache/redis"
-    Canal "github.com/go-gin-demo/lib/canal"
-    Router "github.com/go-gin-demo/app/canal"
+    Router "github.com/HDT3213/go-gin-demo/app/canal"
+    "github.com/HDT3213/go-gin-demo/app/context/config"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/model"
+    MQRouter "github.com/HDT3213/go-gin-demo/app/mq/router"
+    Redis "github.com/HDT3213/go-gin-demo/lib/cache/redis"
+    Canal "github.com/HDT3213/go-gin-demo/lib/canal"
+    DB "github.com/HDT3213/go-gin-demo/lib/db"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    MQ "github.com/HDT3213/go-gin-demo/lib/mq"
+    "os"
 )
 
 func main() {

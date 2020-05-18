@@ -2,9 +2,9 @@ package canal
 
 
 import (
-    "github.com/go-gin-demo/lib/canal"
-    PostService "github.com/go-gin-demo/app/service/post"
-    UserService "github.com/go-gin-demo/app/service/user"
+    PostService "github.com/HDT3213/go-gin-demo/app/service/post"
+    UserService "github.com/HDT3213/go-gin-demo/app/service/user"
+    "github.com/HDT3213/go-gin-demo/lib/canal"
 )
 
 func GetConsumerMap() map[string]canal.ConsumerFunc {

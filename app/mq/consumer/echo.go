@@ -1,8 +1,8 @@
 package consumer
 
 import (
-    "github.com/go-gin-demo/lib/logger"
-    "github.com/go-gin-demo/lib/mq"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    "github.com/HDT3213/go-gin-demo/lib/mq"
 )
 
 func Echo(msg *mq.Msg) {

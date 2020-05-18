@@ -1,17 +1,17 @@
 package user
 
 import (
-    "github.com/go-gin-demo/app/entity"
-    "fmt"
-    PostModel "github.com/go-gin-demo/app/model/post"
-    "time"
-    RLock "github.com/bsm/redis-lock"
     "errors"
-    "github.com/go-gin-demo/lib/collections/set"
-    "github.com/go-gin-demo/lib/logger"
-    "github.com/go-gin-demo/app/context/context"
-    "github.com/go-gin-demo/lib/cache/redis"
+    "fmt"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    PostModel "github.com/HDT3213/go-gin-demo/app/model/post"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis"
+    "github.com/HDT3213/go-gin-demo/lib/collections/set"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    RLock "github.com/bsm/redis-lock"
     GoRedis "github.com/go-redis/redis"
+    "time"
 )
 
 const (

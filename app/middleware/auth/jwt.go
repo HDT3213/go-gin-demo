@@ -1,12 +1,12 @@
 package auth
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/lib/response"
+    UserModel "github.com/HDT3213/go-gin-demo/app/model/user"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
+    "github.com/HDT3213/go-gin-demo/lib/response"
     "github.com/dgrijalva/jwt-go"
-    UserModel "github.com/go-gin-demo/app/model/user"
+    "github.com/gin-gonic/gin"
     "time"
-    BizError "github.com/go-gin-demo/lib/errors"
 )
 
 const (

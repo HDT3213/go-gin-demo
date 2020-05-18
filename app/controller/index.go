@@ -1,8 +1,8 @@
 package controller
 
 import (
+    "github.com/HDT3213/go-gin-demo/lib/response"
     "github.com/gin-gonic/gin"
-    "github.com/go-gin-demo/lib/response"
 )
 
 func Index(ctx *gin.Context)  {

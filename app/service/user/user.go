@@ -1,18 +1,18 @@
 package user
 
 import (
-    "github.com/go-gin-demo/app/entity"
-    "strconv"
-    UserModel "github.com/go-gin-demo/app/model/user"
-    PostModel "github.com/go-gin-demo/app/model/post"
-    FollowModel "github.com/go-gin-demo/app/model/follow"
-    FollowTimelineModel "github.com/go-gin-demo/app/model/timeline/follow"
-    BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
-    "github.com/go-gin-demo/lib/collections/set"
-    "github.com/go-gin-demo/lib/canal"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    FollowModel "github.com/HDT3213/go-gin-demo/app/model/follow"
+    PostModel "github.com/HDT3213/go-gin-demo/app/model/post"
+    FollowTimelineModel "github.com/HDT3213/go-gin-demo/app/model/timeline/follow"
+    UserModel "github.com/HDT3213/go-gin-demo/app/model/user"
+    "github.com/HDT3213/go-gin-demo/lib/canal"
+    "github.com/HDT3213/go-gin-demo/lib/collections/set"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
     "github.com/mitchellh/mapstructure"
-    "github.com/go-gin-demo/app/context/context"
+    "strconv"
 )
 
 func RenderUsers(currentUid uint64, users []*entity.User) ([]*entity.UserEntity, error) {

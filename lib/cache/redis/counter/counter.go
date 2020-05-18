@@ -2,10 +2,10 @@ package counter
 
 import (
     "fmt"
+    "github.com/HDT3213/go-gin-demo/lib/collections/set"
+    "github.com/go-redis/redis"
     "strconv"
     "time"
-    "github.com/go-gin-demo/lib/collections/set"
-    "github.com/go-redis/redis"
 )
 
 const TTL = 1 * time.Hour

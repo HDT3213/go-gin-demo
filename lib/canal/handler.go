@@ -1,9 +1,9 @@
 package canal
 
 import (
-    "github.com/siddontang/go-mysql/canal"
-    "github.com/go-gin-demo/lib/logger"
     "fmt"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    "github.com/siddontang/go-mysql/canal"
     "github.com/siddontang/go-mysql/mysql"
     "github.com/siddontang/go-mysql/schema"
     "runtime/debug"

@@ -1,10 +1,10 @@
 package mq
 
 import (
-    "github.com/streadway/amqp"
     "encoding/binary"
     "fmt"
-    "github.com/go-gin-demo/lib/logger"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    "github.com/streadway/amqp"
 )
 
 type Settings struct {

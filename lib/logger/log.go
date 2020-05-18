@@ -2,13 +2,13 @@ package logger
 
 import (
     "fmt"
+    "github.com/HDT3213/go-gin-demo/lib/files"
+    "io"
     "log"
     "os"
     "path/filepath"
     "runtime"
     "time"
-    "github.com/go-gin-demo/lib/files"
-    "io"
 )
 
 type Settings struct {

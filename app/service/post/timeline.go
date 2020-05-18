@@ -1,12 +1,12 @@
 package post
 
 import (
-    "github.com/go-gin-demo/app/entity"
-    UserTimelineModel "github.com/go-gin-demo/app/model/timeline/user"
-    UserModel "github.com/go-gin-demo/app/model/user"
-    PostModel "github.com/go-gin-demo/app/model/post"
-    BizError "github.com/go-gin-demo/lib/errors"
     "fmt"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    PostModel "github.com/HDT3213/go-gin-demo/app/model/post"
+    UserTimelineModel "github.com/HDT3213/go-gin-demo/app/model/timeline/user"
+    UserModel "github.com/HDT3213/go-gin-demo/app/model/user"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
 )
 
 func GetUserTimeline(currentUid uint64, uid uint64, start int32, length int32) ([]*entity.PostEntity, int32, error) {

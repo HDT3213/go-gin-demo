@@ -1,16 +1,16 @@
 package follow
 
 import (
-    "fmt"
-    "github.com/go-gin-demo/app/entity"
-    "github.com/go-gin-demo/lib/collections/set"
-    RLock "github.com/bsm/redis-lock"
     "errors"
-    "github.com/go-gin-demo/lib/collections"
+    "fmt"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis/counter"
+    "github.com/HDT3213/go-gin-demo/lib/collections"
+    "github.com/HDT3213/go-gin-demo/lib/collections/set"
+    RLock "github.com/bsm/redis-lock"
     "strconv"
-    "github.com/go-gin-demo/app/context/context"
-    "github.com/go-gin-demo/lib/cache/redis/counter"
-    "github.com/go-gin-demo/lib/cache/redis"
 )
 
 const (

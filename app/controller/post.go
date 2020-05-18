@@ -1,12 +1,12 @@
 package controller
 
 import (
+    "github.com/HDT3213/go-gin-demo/app/middleware/auth"
+    PostService "github.com/HDT3213/go-gin-demo/app/service/post"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
+    "github.com/HDT3213/go-gin-demo/lib/response"
     "github.com/gin-gonic/gin"
-    PostService "github.com/go-gin-demo/app/service/post"
-    "github.com/go-gin-demo/app/middleware/auth"
-    "github.com/go-gin-demo/lib/response"
     "strconv"
-    BizError "github.com/go-gin-demo/lib/errors"
 )
 
 func CreatePost(ctx *gin.Context) {

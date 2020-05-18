@@ -2,9 +2,9 @@ package redis
 
 import (
     "fmt"
+    "github.com/go-redis/redis"
     "math/rand"
     "strconv"
-    "github.com/go-redis/redis"
 )
 
 const lockSuffix  = ":lock"

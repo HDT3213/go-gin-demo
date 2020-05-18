@@ -1,14 +1,14 @@
 package controller
 
 import (
-    "github.com/gin-gonic/gin"
-    "fmt"
-    "time"
-    "github.com/go-gin-demo/app/context/context"
-    "github.com/go-gin-demo/lib/mq"
-    "github.com/go-gin-demo/lib/response"
     "errors"
-    "github.com/go-gin-demo/app/mq/router"
+    "fmt"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/mq/router"
+    "github.com/HDT3213/go-gin-demo/lib/mq"
+    "github.com/HDT3213/go-gin-demo/lib/response"
+    "github.com/gin-gonic/gin"
+    "time"
 )
 
 func Panic(ctx *gin.Context) {

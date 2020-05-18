@@ -1,8 +1,8 @@
 package response
 
 import (
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
     "github.com/gin-gonic/gin"
-    BizError "github.com/go-gin-demo/lib/errors"
 )
 
 func Error(ctx *gin.Context, err error) {

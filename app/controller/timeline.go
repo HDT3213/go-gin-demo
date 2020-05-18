@@ -1,13 +1,13 @@
 package controller
 
 import (
+    "github.com/HDT3213/go-gin-demo/app/middleware/auth"
+    PostService "github.com/HDT3213/go-gin-demo/app/service/post"
+    BizError "github.com/HDT3213/go-gin-demo/lib/errors"
+    "github.com/HDT3213/go-gin-demo/lib/request"
+    "github.com/HDT3213/go-gin-demo/lib/response"
     "github.com/gin-gonic/gin"
     "strconv"
-    "github.com/go-gin-demo/lib/response"
-    PostService "github.com/go-gin-demo/app/service/post"
-    "github.com/go-gin-demo/app/middleware/auth"
-    BizError "github.com/go-gin-demo/lib/errors"
-    "github.com/go-gin-demo/lib/request"
 )
 
 func GetUserTimeline(ctx *gin.Context) {

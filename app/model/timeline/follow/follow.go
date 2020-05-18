@@ -1,16 +1,16 @@
 package follow
 
 import (
-    "fmt"
-    "github.com/go-gin-demo/app/entity"
-    FollowModel "github.com/go-gin-demo/app/model/follow"
-    UserTimelineModel "github.com/go-gin-demo/app/model/timeline/user"
-    RLock "github.com/bsm/redis-lock"
-    "errors"
-    "time"
     "container/heap"
-    "github.com/go-gin-demo/app/context/context"
-    "github.com/go-gin-demo/lib/cache/redis"
+    "errors"
+    "fmt"
+    "github.com/HDT3213/go-gin-demo/app/context/context"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    FollowModel "github.com/HDT3213/go-gin-demo/app/model/follow"
+    UserTimelineModel "github.com/HDT3213/go-gin-demo/app/model/timeline/user"
+    "github.com/HDT3213/go-gin-demo/lib/cache/redis"
+    RLock "github.com/bsm/redis-lock"
+    "time"
 )
 
 const (

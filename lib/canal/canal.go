@@ -2,13 +2,13 @@ package canal
 
 
 import (
-    "github.com/siddontang/go-mysql/canal"
-    "github.com/go-gin-demo/lib/zookeeper"
-    "github.com/samuel/go-zookeeper/zk"
-    "github.com/vmihailenco/msgpack"
-    "github.com/siddontang/go-mysql/mysql"
-    "github.com/go-gin-demo/lib/logger"
     "fmt"
+    "github.com/HDT3213/go-gin-demo/lib/logger"
+    "github.com/HDT3213/go-gin-demo/lib/zookeeper"
+    "github.com/samuel/go-zookeeper/zk"
+    "github.com/siddontang/go-mysql/canal"
+    "github.com/siddontang/go-mysql/mysql"
+    "github.com/vmihailenco/msgpack"
 )
 
 type Settings struct {

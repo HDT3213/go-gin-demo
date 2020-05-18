@@ -1,9 +1,9 @@
 package post
 
 import (
-    "github.com/go-gin-demo/app/entity"
-    FollowTimelineModel "github.com/go-gin-demo/app/model/timeline/follow"
-    PostModel "github.com/go-gin-demo/app/model/post"
+    "github.com/HDT3213/go-gin-demo/app/entity"
+    PostModel "github.com/HDT3213/go-gin-demo/app/model/post"
+    FollowTimelineModel "github.com/HDT3213/go-gin-demo/app/model/timeline/follow"
 )
 
 func GetFollowingTimeline(currentUid uint64, start int32, length int32) ([]*entity.PostEntity, int32, error) {
